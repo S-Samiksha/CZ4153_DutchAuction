@@ -9,9 +9,13 @@ https://www.algorand.foundation/algo-auction-overview <br>
 For each bidder, keep track of how much money they bid. <br>
 When they bid, reduce the supply. <br>
 As the price drops periodically, each bidder will have an increasing number of algos they can receive. <br>
+After 20 minutes, "end the auction" <br>
+1. Distribute tokens to bidders
+2. Burn remaining tokens that were left unsold
 
 ### Problems:
 1. Timestamp --> running the functions every minute
+Update: no need to run every minute, can just use a function to keep track of number of tokens left
 2. FrontEnd Connection 
 
 
@@ -48,6 +52,8 @@ function updateAllBiders(){
 //price falls, then update each mapping by totalAlgosPurchased = bidValue/currentPrice
 }
 
+// to time that 20mins have passed
+// run this immediately when contract deployed
 function find20Min(){
 //????
 }
@@ -55,6 +61,11 @@ function find20Min(){
 function endAuction(){
 // Using the currentprice, send the eth to the wallet address
 }
+
+function burnRemainingTokens(uint256 currentUnsoldAlgos){
+// to burn the remaining tokens that were left unsold after auction closes
+}
+
 
 ```
 
