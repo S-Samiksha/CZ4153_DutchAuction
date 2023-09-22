@@ -39,7 +39,8 @@ function addBid(uint256 walletAddress, uint256 bidValue){
 // 2. if does not exist, create a structure and add to the mapping
 // 3. if exists, replace  the bidValue
 // 4. decrement the currentUnsoldAlgos according to the current price => currentUnsoldAlgos -= bidValue/Price
-// 5. Check if there are enough algos as well --> clearing price 
+// 5. Check if there are enough algos as well --> clearing price
+// 6. UpdateAllBiders and the current price as well 
 }
 
 function updateAllBiders(){
@@ -47,11 +48,8 @@ function updateAllBiders(){
 //price falls, then update each mapping by totalAlgosPurchased = bidValue/currentPrice
 }
 
-function decrementPrice(){
-//every minute, reduce the currentPrice by x amount of ETH
-//call the updateAllBiders function
-//check if it hits the reserve price
-// if it does, allocate the algos 
+function find20Min(){
+//????
 }
 
 function endAuction(){
