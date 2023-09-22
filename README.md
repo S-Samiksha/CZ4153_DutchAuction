@@ -18,6 +18,11 @@ After 20 minutes, "end the auction" <br>
 Update: no need to run every minute, can just use a function to keep track of number of tokens left
 2. FrontEnd Connection 
 
+### Bonus:
+Add tests to demonstrate auction contract is resistant to re-entry attack <br>
+https://www.certik.com/resources/blog/3K7ZUAKpOr1GW75J2i0VHh-what-is-a-reentracy-attack
+- basically is when another contract attacks our contract by constantly calling the withdraw function to withdraw the funds 
+- occurs b/c vulnerable smart contract first checking the balance, then sending the funds, and then finally updating its balance 
 
 ### Pseudocode:
 ```solidity
