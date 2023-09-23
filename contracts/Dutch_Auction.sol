@@ -2,11 +2,28 @@
 
 pragma solidity ^0.8.21;
 
+error Dutch_Auction__NotOwner();
+error Dutch_Auction__Owner();
+
 contract Dutch_Auction {
+    /* TODO:
+    1. Stop the auction automatically when 20 minutes is up 
+    2. Check in there is enough algos in the first place, if it has already hit 0, stop the auction 
+    3. what are we sending to the "winners"
+    4. Ending auction function (relate to point 3)
+    5. Do the testing
+    6. Do the front end
+    7. re entry attack PoC
+    8. ERC20 integration
+    9. can the owner of the contract take part in the auction? --> no --> Implemented
+    10. only owner can end auction and burn the tokens 
+
+    */
+
     uint256 private currentPrice; //in wei
     uint256 private currentUnsoldAlgos;
     uint256 private totalNumBidders = 0;
-    uint256 private startPrice;
+    uint256 private startPrice; //in wei
 
     /* Set in constructor, cannot be changed afterwards, only retrived */
     uint256 private immutable reservePrice;
@@ -22,7 +39,7 @@ contract Dutch_Auction {
         bool isExist;
     }
 
-    /*mappings */
+    /*mappings and arrays*/
     address[] biddersAddress;
     mapping(address => Bidder) public biddersList; //to be made private later <for debugging purposes>
 
@@ -45,15 +62,30 @@ contract Dutch_Auction {
         deployDate = block.timestamp;
     }
 
+    /* modifiers */
+    modifier onlyOwner() {
+        // require(msg.sender == owner);
+        if (msg.sender != i_owner) revert Dutch_Auction__NotOwner();
+        _; //do the rest of the function
+    }
+
+    modifier notOwner() {
+        // require(msg.sender == owner);
+        if (msg.sender == i_owner) revert Dutch_Auction__Owner();
+        _; //do the rest of the function
+    }
+
     /* public functions */
 
     //Reference: https://docs.soliditylang.org/en/latest/types.html#structs
-    //TODO: needs to be changed to a payable function
-    function addBidder(uint256 _bidValue) public {
+    function addBidder(uint256 _bidValue) public payable notOwner {
         //call updatePrice function
         updateCurrentPrice();
 
         //checking all the requirements
+        require(_bidValue == msg.value, "bidValue stated is not what was sent");
+        // _bidValue = msg.value; // alternative way
+
         require(_bidValue >= currentPrice, "bidValue lower than currentPrice"); //bidValue has to be higher inorder to purchase
         require(
             _bidValue / currentPrice <= currentUnsoldAlgos,
@@ -79,36 +111,42 @@ contract Dutch_Auction {
         //Updating private variables in the contract
         currentUnsoldAlgos -= _bidValue / currentPrice;
 
-        //updating all bidders except current bidder
-        updateAllBiders(msg.sender);
+        updateAllBiders();
     }
 
     /*Internal Functions */
+    //TODO: make this internal later
     function updateCurrentPrice() public {
         //there is 60 seconds in one minute
         // 20 minutes auction
         // price drops by 10 wei every 2 minutes --> actual
-        // price drops by 10 wei every 1 minutes --> testing purposes
+        // price drops by 10 wei every0.5 minutes --> testing purposes
         currentPrice =
             startPrice -
-            (uint256((block.timestamp - deployDate)) / 60) *
+            (uint256((block.timestamp - deployDate)) / 30) *
             10;
     }
 
     //TODO: can we use IPFS to save gas and make this better?
-    //TODO: updateAllBidders not working
-    function updateAllBiders(address currentBidder) internal {
+    function updateAllBiders() internal {
         //obtain current price again in case time elapsed
         updateCurrentPrice();
         for (uint i = 0; i < biddersAddress.length; i++) {
-            if (biddersList[msg.sender].walletAddress == currentBidder) {
-                continue;
-            } else {
-                biddersList[msg.sender].totalAlgosPurchased +=
-                    biddersList[msg.sender].bidValue /
-                    currentPrice;
-            }
+            biddersList[biddersAddress[i]].totalAlgosPurchased =
+                biddersList[biddersAddress[i]].bidValue /
+                currentPrice;
         }
+    }
+
+    /*
+    triggered when either algos runs out or time runs out 
+    */
+    function endAuction() internal onlyOwner {}
+
+    function burnRemainingTokens(
+        uint256 currentUnsoldAlgos
+    ) internal onlyOwner {
+        // to burn the remaining tokens that were left unsold after auction closes
     }
 
     /* View/pure Functions */
@@ -135,5 +173,9 @@ contract Dutch_Auction {
 
     function retrieveContractOwner() public view returns (address) {
         return i_owner;
+    }
+
+    function retrieveContractBalance() public view returns (uint256) {
+        return address(this).balance;
     }
 }
