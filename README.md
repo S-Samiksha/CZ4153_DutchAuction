@@ -43,6 +43,13 @@ https://www.certik.com/resources/blog/3K7ZUAKpOr1GW75J2i0VHh-what-is-a-reentracy
 - basically is when another contract attacks our contract by constantly calling the withdraw function to withdraw the funds
 - occurs b/c vulnerable smart contract first checking the balance, then sending the funds, and then finally updating its balance
 
+### To run project:
+```
+git clone https://github.com/S-Samiksha/CZ4153_DutchAuction
+cd CZ4153_DutchAuction
+yarn
+```
+
 ### Pseudocode:
 
 ```solidity
