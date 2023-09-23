@@ -18,10 +18,14 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   log("----------------------------------------------------");
   log("Deploying Dutch_Auction and waiting for confirmations...");
 
+  //Arguments: reservePrice, currentPrice, NumberofAlgos, interval, tokens
+  const arguments = [
+    10, 50, 200, networkConfig[chainId]["keepersUpdateInterval"], 0x0
+  ]
+  
   const Dutch_Auction = await deploy("Dutch_Auction", {
     from: deployer,
-    //Arguments: reservePrice, currentPrice, NumberofAlgos
-    args: [10, 50, 200],
+    args: arguments,
     log: true,
     // we need to wait if on a live network so we can verify properly
     waitConfirmations: network.config.blockConfirmations || 1,
