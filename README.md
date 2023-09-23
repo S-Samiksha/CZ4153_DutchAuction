@@ -2,9 +2,18 @@
 
 Blockchain Project to build a DutchAuction
 
-# install packages
-- hardhat
-- hardhat deploy 
+# Things to do:
+   1. Stop the auction automatically when 20 minutes is up 
+   2. Check in there is enough algos in the first place, if it has already hit 0, stop the auction 
+   3. what are we sending to the "winners"
+   4. Ending auction function (relate to point 3)
+   5. Do the testing
+   6. Do the front end
+   7. re entry attack PoC
+   8. ERC20 integration
+   9. can the owner of the contract take part in the auction? --> no --> Implemented
+   10. only owner can end auction and burn the tokens 
+   11. Tests to be dynamic with the constructor functions 
 
 # Environment 
 - WSL Ubuntu 

@@ -6,20 +6,6 @@ error Dutch_Auction__NotOwner();
 error Dutch_Auction__IsOwner();
 
 contract Dutch_Auction {
-    /* TODO:
-    1. Stop the auction automatically when 20 minutes is up 
-    2. Check in there is enough algos in the first place, if it has already hit 0, stop the auction 
-    3. what are we sending to the "winners"
-    4. Ending auction function (relate to point 3)
-    5. Do the testing
-    6. Do the front end
-    7. re entry attack PoC
-    8. ERC20 integration
-    9. can the owner of the contract take part in the auction? --> no --> Implemented
-    10. only owner can end auction and burn the tokens 
-
-    */
-
     uint256 private currentPrice; //in wei
     uint256 private currentUnsoldAlgos;
     uint256 private totalNumBidders = 0;
@@ -30,6 +16,9 @@ contract Dutch_Auction {
     address private immutable i_owner;
     uint256 private immutable totalAlgosAvailable;
     uint256 private deployDate;
+
+    uint256 public startTime;
+    uint256 public endTime;
 
     struct Bidder {
         uint256 bidderID;
@@ -84,6 +73,11 @@ contract Dutch_Auction {
         //checking all the requirements
         // require(_bidValue == msg.value, "bidValue stated is not what was sent");
         uint256 _bidValue = msg.value; // alternative way
+        require(
+            reservePrice < currentPrice,
+            "Lower or equal to reserve price! Ending Auction!"
+        );
+        require(currentUnsoldAlgos > 0, "All Algos Sold! Ending Auction! ");
         require(_bidValue >= currentPrice, "bidValue lower than currentPrice"); //bidValue has to be higher inorder to purchase
         require(
             _bidValue / currentPrice <= currentUnsoldAlgos,
