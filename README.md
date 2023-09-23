@@ -2,10 +2,13 @@
 
 Blockchain Project to build a DutchAuction
 
-### References:
+# install packages
+- hardhat
+- hardhat deploy 
 
-https://github.com/lamtlo/Solidity-Dutch-Auction/blob/master/contracts/Auction.sol <br>
-https://www.algorand.foundation/algo-auction-overview <br>
+# Environment 
+- WSL Ubuntu 
+
 
 ### Ideas:
 
@@ -81,3 +84,10 @@ function burnRemainingTokens(uint256 currentUnsoldAlgos){
 
 
 ```
+
+
+### References:
+
+https://github.com/lamtlo/Solidity-Dutch-Auction/blob/master/contracts/Auction.sol <br>
+https://www.algorand.foundation/algo-auction-overview <br>
+
