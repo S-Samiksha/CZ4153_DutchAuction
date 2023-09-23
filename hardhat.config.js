@@ -17,11 +17,11 @@ module.exports = {
       url: SEPOLIA_RPC_URL,
       accounts: [SEPOLIA_PRIVATE_KEY],
       chainId: 11155111,
-      blockConfirmations: 5,
+      blockConfirmations: 2,
       gas: 6000000,
     },
     localhost: {
-      url: "http://localhost:8545",
+      url: "http://127.0.0.1:8545",
       chainId: 31337,
     },
   },
@@ -39,6 +39,9 @@ module.exports = {
   namedAccounts: {
     deployer: {
       default: 0, //the first account is the deployer account
+    },
+    userOne: {
+      default: 1,
     },
     //you can even add the different users here
   },

@@ -1,11 +1,11 @@
 {
   "name": "CZ4153_DutchAuction",
   "version": "1.0.0",
-  "main": "index.js",
   "repository": "https://github.com/S-Samiksha/CZ4153_DutchAuction.git",
   "author": "SamAndMelise",
   "license": "MIT",
   "devDependencies": {
+    "@chainlink/contracts": "^0.7.1",
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
     "@nomicfoundation/hardhat-ethers": "^3.0.0",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
@@ -26,14 +26,22 @@
     "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-promise": "^5.1.0",
     "ethereum-waffle": "^3.0.0",
-    "ethers": "^6.7.1",
+    "ethers": "^6.1.0",
     "hardhat": "^2.9.3",
     "hardhat-deploy": "^0.11.37",
     "hardhat-gas-reporter": "^1.0.4",
     "prettier": "^2.3.2",
     "prettier-plugin-solidity": "^1.0.0-beta.13",
-    "solhint": "^3.3.6",
+    "solhint": "^3.3.7",
     "solidity-coverage": "^0.7.16",
     "typechain": "^8.1.0"
+  },
+  "scripts": {
+    "test": "hardhat test",
+    "test:staging": "hardhat test --network sepolia",
+    "lint": "solhint 'contracts/**/*.sol'",
+    "lint:fix": "solhint 'contracts/**/*.sol' --fix",
+    "format": "prettier --write .",
+    "coverage": "hardhat coverage"
   }
 }

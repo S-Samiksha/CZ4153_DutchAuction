@@ -78,13 +78,13 @@ contract Dutch_Auction {
     /* public functions */
 
     //Reference: https://docs.soliditylang.org/en/latest/types.html#structs
-    function addBidder(uint256 _bidValue) public payable notOwner {
+    function addBidder() public payable notOwner {
         //call updatePrice function
         updateCurrentPrice();
 
         //checking all the requirements
-        require(_bidValue == msg.value, "bidValue stated is not what was sent");
-        // _bidValue = msg.value; // alternative way
+        // require(_bidValue == msg.value, "bidValue stated is not what was sent");
+        uint256 _bidValue = msg.value; // alternative way
 
         require(_bidValue >= currentPrice, "bidValue lower than currentPrice"); //bidValue has to be higher inorder to purchase
         require(
@@ -175,7 +175,11 @@ contract Dutch_Auction {
         return i_owner;
     }
 
-    function retrieveContractBalance() public view returns (uint256) {
+    function retrieveContractBalance() public view onlyOwner returns (uint256) {
         return address(this).balance;
+    }
+
+    function retrieveBidderAlgos(address bidder) public view returns (uint256) {
+        return biddersList[bidder].totalAlgosPurchased;
     }
 }

@@ -84,7 +84,8 @@ function burnRemainingTokens(uint256 currentUnsoldAlgos){
 
 
 ```
-
+### Deployed to testnet (for testing, SEPOLIA):
+1. https://sepolia.etherscan.io/address/0x75bc2A1f9097837A3313C198A332f376fd7b587f#code
 
 ### References:
 

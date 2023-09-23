@@ -1,0 +1,372 @@
+{
+  "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_reservePrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_startPrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_totalAlgosAvailable",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "Dutch_Auction__NotOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "Dutch_Auction__Owner",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "addBidder",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "biddersList",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "bidderID",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "walletAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "bidValue",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "totalAlgosPurchased",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "isExist",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "retrieveAlgosRemaining",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "bidder",
+          "type": "address"
+        }
+      ],
+      "name": "retrieveBidderAlgos",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "retrieveContractBalance",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "retrieveContractOwner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "retrievePrice",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "retrieveReservePrice",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "retrieveTotalAlgos",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "retrieveTotalBidder",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "updateCurrentPrice",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x0928d5c0ddda4ef229f049dc463b4f876de942e1f7e8083b9439931ef654aca1",
+  "receipt": {
+    "to": null,
+    "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "contractAddress": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "transactionIndex": 0,
+    "gasUsed": "888693",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x1136ea7ad67b717eb12f45399d0e70e827207eb0278d4d9b0e225ef5baf510bc",
+    "transactionHash": "0x0928d5c0ddda4ef229f049dc463b4f876de942e1f7e8083b9439931ef654aca1",
+    "logs": [],
+    "blockNumber": 1,
+    "cumulativeGasUsed": "888693",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    10,
+    50,
+    200
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "c6900584a211a99ede1c44938b2e6555",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.21+commit.d9974bed\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_reservePrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_startPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_totalAlgosAvailable\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"Dutch_Auction__NotOwner\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"Dutch_Auction__Owner\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"addBidder\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"biddersList\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"bidderID\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"walletAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"bidValue\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalAlgosPurchased\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"isExist\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"retrieveAlgosRemaining\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"bidder\",\"type\":\"address\"}],\"name\":\"retrieveBidderAlgos\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"retrieveContractBalance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"retrieveContractOwner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"retrievePrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"retrieveReservePrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"retrieveTotalAlgos\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"retrieveTotalBidder\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"updateCurrentPrice\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/Dutch_Auction.sol\":\"Dutch_Auction\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"contracts/Dutch_Auction.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity ^0.8.21;\\n\\nerror Dutch_Auction__NotOwner();\\nerror Dutch_Auction__Owner();\\n\\ncontract Dutch_Auction {\\n    /* TODO:\\n    1. Stop the auction automatically when 20 minutes is up \\n    2. Check in there is enough algos in the first place, if it has already hit 0, stop the auction \\n    3. what are we sending to the \\\"winners\\\"\\n    4. Ending auction function (relate to point 3)\\n    5. Do the testing\\n    6. Do the front end\\n    7. re entry attack PoC\\n    8. ERC20 integration\\n    9. can the owner of the contract take part in the auction? --> no --> Implemented\\n    10. only owner can end auction and burn the tokens \\n\\n    */\\n\\n    uint256 private currentPrice; //in wei\\n    uint256 private currentUnsoldAlgos;\\n    uint256 private totalNumBidders = 0;\\n    uint256 private startPrice; //in wei\\n\\n    /* Set in constructor, cannot be changed afterwards, only retrived */\\n    uint256 private immutable reservePrice;\\n    address private immutable i_owner;\\n    uint256 private immutable totalAlgosAvailable;\\n    uint256 private deployDate;\\n\\n    struct Bidder {\\n        uint256 bidderID;\\n        address walletAddress;\\n        uint256 bidValue; //the value they paid to the contract to purchase the algo\\n        uint256 totalAlgosPurchased; //this will change everytime somebody else bids\\n        bool isExist;\\n    }\\n\\n    /*mappings and arrays*/\\n    address[] biddersAddress;\\n    mapping(address => Bidder) public biddersList; //to be made private later <for debugging purposes>\\n\\n    /*Constructor*/\\n    constructor(\\n        uint256 _reservePrice,\\n        uint256 _startPrice,\\n        uint256 _totalAlgosAvailable\\n    ) {\\n        require(\\n            _reservePrice < _startPrice,\\n            \\\"reserve price is higher than current price\\\"\\n        );\\n        i_owner = msg.sender;\\n        reservePrice = _reservePrice;\\n        totalAlgosAvailable = _totalAlgosAvailable;\\n        currentUnsoldAlgos = _totalAlgosAvailable;\\n        currentPrice = _startPrice;\\n        startPrice = _startPrice;\\n        deployDate = block.timestamp;\\n    }\\n\\n    /* modifiers */\\n    modifier onlyOwner() {\\n        // require(msg.sender == owner);\\n        if (msg.sender != i_owner) revert Dutch_Auction__NotOwner();\\n        _; //do the rest of the function\\n    }\\n\\n    modifier notOwner() {\\n        // require(msg.sender == owner);\\n        if (msg.sender == i_owner) revert Dutch_Auction__Owner();\\n        _; //do the rest of the function\\n    }\\n\\n    /* public functions */\\n\\n    //Reference: https://docs.soliditylang.org/en/latest/types.html#structs\\n    function addBidder() public payable notOwner {\\n        //call updatePrice function\\n        updateCurrentPrice();\\n\\n        //checking all the requirements\\n        // require(_bidValue == msg.value, \\\"bidValue stated is not what was sent\\\");\\n        uint256 _bidValue = msg.value; // alternative way\\n\\n        require(_bidValue >= currentPrice, \\\"bidValue lower than currentPrice\\\"); //bidValue has to be higher inorder to purchase\\n        require(\\n            _bidValue / currentPrice <= currentUnsoldAlgos,\\n            \\\"Not enough algos for you!\\\"\\n        );\\n\\n        // Adding or Updating the bidders currently in the contract\\n        if (!biddersList[msg.sender].isExist) {\\n            Bidder storage newBidder = biddersList[msg.sender]; //get the object\\n            //set the variables\\n            newBidder.bidderID = ++totalNumBidders;\\n            newBidder.walletAddress = msg.sender;\\n            newBidder.bidValue = _bidValue;\\n            newBidder.totalAlgosPurchased = _bidValue / currentPrice; //need to check the math\\n            newBidder.isExist = true;\\n            biddersAddress.push(msg.sender);\\n        } else {\\n            Bidder storage existingBidder = biddersList[msg.sender]; //get the object\\n            existingBidder.bidValue += _bidValue;\\n            existingBidder.totalAlgosPurchased += _bidValue / currentPrice;\\n        }\\n\\n        //Updating private variables in the contract\\n        currentUnsoldAlgos -= _bidValue / currentPrice;\\n\\n        updateAllBiders();\\n    }\\n\\n    /*Internal Functions */\\n    //TODO: make this internal later\\n    function updateCurrentPrice() public {\\n        //there is 60 seconds in one minute\\n        // 20 minutes auction\\n        // price drops by 10 wei every 2 minutes --> actual\\n        // price drops by 10 wei every0.5 minutes --> testing purposes\\n        currentPrice =\\n            startPrice -\\n            (uint256((block.timestamp - deployDate)) / 30) *\\n            10;\\n    }\\n\\n    //TODO: can we use IPFS to save gas and make this better?\\n    function updateAllBiders() internal {\\n        //obtain current price again in case time elapsed\\n        updateCurrentPrice();\\n        for (uint i = 0; i < biddersAddress.length; i++) {\\n            biddersList[biddersAddress[i]].totalAlgosPurchased =\\n                biddersList[biddersAddress[i]].bidValue /\\n                currentPrice;\\n        }\\n    }\\n\\n    /*\\n    triggered when either algos runs out or time runs out \\n    */\\n    function endAuction() internal onlyOwner {}\\n\\n    function burnRemainingTokens(\\n        uint256 currentUnsoldAlgos\\n    ) internal onlyOwner {\\n        // to burn the remaining tokens that were left unsold after auction closes\\n    }\\n\\n    /* View/pure Functions */\\n\\n    function retrievePrice() public view returns (uint256) {\\n        return currentPrice;\\n    }\\n\\n    function retrieveAlgosRemaining() public view returns (uint256) {\\n        return currentUnsoldAlgos;\\n    }\\n\\n    function retrieveTotalAlgos() public view returns (uint256) {\\n        return totalAlgosAvailable;\\n    }\\n\\n    function retrieveReservePrice() public view returns (uint256) {\\n        return reservePrice;\\n    }\\n\\n    function retrieveTotalBidder() public view returns (uint256) {\\n        return totalNumBidders;\\n    }\\n\\n    function retrieveContractOwner() public view returns (address) {\\n        return i_owner;\\n    }\\n\\n    function retrieveContractBalance() public view onlyOwner returns (uint256) {\\n        return address(this).balance;\\n    }\\n\\n    function retrieveBidderAlgos(address bidder) public view returns (uint256) {\\n        return biddersList[bidder].totalAlgosPurchased;\\n    }\\n}\\n\",\"keccak256\":\"0x0edcd81d082df00dbe988dcf40f93cdebba1e6cdb13bbd755c568447ccb1d605\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x60e060405260006002553480156200001657600080fd5b5060405162000fcf38038062000fcf83398181016040528101906200003c91906200012a565b81831062000081576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040162000078906200020d565b60405180910390fd5b3373ffffffffffffffffffffffffffffffffffffffff1660a08173ffffffffffffffffffffffffffffffffffffffff168152505082608081815250508060c08181525050806001819055508160008190555081600381905550426004819055505050506200022f565b600080fd5b6000819050919050565b6200010481620000ef565b81146200011057600080fd5b50565b6000815190506200012481620000f9565b92915050565b600080600060608486031215620001465762000145620000ea565b5b6000620001568682870162000113565b9350506020620001698682870162000113565b92505060406200017c8682870162000113565b9150509250925092565b600082825260208201905092915050565b7f7265736572766520707269636520697320686967686572207468616e2063757260008201527f72656e7420707269636500000000000000000000000000000000000000000000602082015250565b6000620001f5602a8362000186565b9150620002028262000197565b604082019050919050565b600060208201905081810360008301526200022881620001e6565b9050919050565b60805160a05160c051610d626200026d60003960006107c0015260008181610297015281816106c6015261078e015260006102710152610d626000f3fe60806040526004361061009c5760003560e01c8063aa9d9bd611610064578063aa9d9bd61461017f578063ac5ece6d14610196578063b3ccc8eb146101c1578063df385306146101ec578063e02539c814610217578063e4655bca146102425761009c565b806314df33ac146100a15780631f8cdb04146100cc5780636e3bc76b146100d65780637494c875146101175780637ded653f14610154575b600080fd5b3480156100ad57600080fd5b506100b661026d565b6040516100c39190610950565b60405180910390f35b6100d4610295565b005b3480156100e257600080fd5b506100fd60048036038101906100f891906109ce565b610613565b60405161010e959493929190610a25565b60405180910390f35b34801561012357600080fd5b5061013e600480360381019061013991906109ce565b610676565b60405161014b9190610950565b60405180910390f35b34801561016057600080fd5b506101696106c2565b6040516101769190610950565b60405180910390f35b34801561018b57600080fd5b5061019461074f565b005b3480156101a257600080fd5b506101ab61078a565b6040516101b89190610a78565b60405180910390f35b3480156101cd57600080fd5b506101d66107b2565b6040516101e39190610950565b60405180910390f35b3480156101f857600080fd5b506102016107bc565b60405161020e9190610950565b60405180910390f35b34801561022357600080fd5b5061022c6107e4565b6040516102399190610950565b60405180910390f35b34801561024e57600080fd5b506102576107ed565b6040516102649190610950565b60405180910390f35b60007f0000000000000000000000000000000000000000000000000000000000000000905090565b7f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff160361031a576040517f708af72500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b61032261074f565b600034905060005481101561036c576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040161036390610af0565b60405180910390fd5b6001546000548261037d9190610b6e565b11156103be576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016103b590610beb565b60405180910390fd5b600660003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060040160009054906101000a900460ff1661055a576000600660003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020905060026000815461046490610c0b565b9190508190558160000181905550338160010160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550818160020181905550600054826104cc9190610b6e565b816003018190555060018160040160006101000a81548160ff0219169083151502179055506005339080600181540180825580915050600190039060005260206000200160009091909190916101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550506105e2565b6000600660003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000209050818160020160008282546105b19190610c53565b92505081905550600054826105c69190610b6e565b8160030160008282546105d99190610c53565b92505081905550505b600054816105f09190610b6e565b600160008282546106019190610c87565b925050819055506106106107f7565b50565b60066020528060005260406000206000915090508060000154908060010160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff16908060020154908060030154908060040160009054906101000a900460ff16905085565b6000600660008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020600301549050919050565b60007f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614610749576040517fae4a21bc00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b47905090565b600a601e600454426107619190610c87565b61076b9190610b6e565b6107759190610cbb565b6003546107829190610c87565b600081905550565b60007f0000000000000000000000000000000000000000000000000000000000000000905090565b6000600154905090565b60007f0000000000000000000000000000000000000000000000000000000000000000905090565b60008054905090565b6000600254905090565b6107ff61074f565b60005b60058054905081101561093457600054600660006005848154811061082a57610829610cfd565b5b9060005260206000200160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000206002015461089d9190610b6e565b60066000600584815481106108b5576108b4610cfd565b5b9060005260206000200160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060030181905550808061092c90610c0b565b915050610802565b50565b6000819050919050565b61094a81610937565b82525050565b60006020820190506109656000830184610941565b92915050565b600080fd5b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b600061099b82610970565b9050919050565b6109ab81610990565b81146109b657600080fd5b50565b6000813590506109c8816109a2565b92915050565b6000602082840312156109e4576109e361096b565b5b60006109f2848285016109b9565b91505092915050565b610a0481610990565b82525050565b60008115159050919050565b610a1f81610a0a565b82525050565b600060a082019050610a3a6000830188610941565b610a4760208301876109fb565b610a546040830186610941565b610a616060830185610941565b610a6e6080830184610a16565b9695505050505050565b6000602082019050610a8d60008301846109fb565b92915050565b600082825260208201905092915050565b7f62696456616c7565206c6f776572207468616e2063757272656e745072696365600082015250565b6000610ada602083610a93565b9150610ae582610aa4565b602082019050919050565b60006020820190508181036000830152610b0981610acd565b9050919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b6000610b7982610937565b9150610b8483610937565b925082610b9457610b93610b10565b5b828204905092915050565b7f4e6f7420656e6f75676820616c676f7320666f7220796f752100000000000000600082015250565b6000610bd5601983610a93565b9150610be082610b9f565b602082019050919050565b60006020820190508181036000830152610c0481610bc8565b9050919050565b6000610c1682610937565b91507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8203610c4857610c47610b3f565b5b600182019050919050565b6000610c5e82610937565b9150610c6983610937565b9250828201905080821115610c8157610c80610b3f565b5b92915050565b6000610c9282610937565b9150610c9d83610937565b9250828203905081811115610cb557610cb4610b3f565b5b92915050565b6000610cc682610937565b9150610cd183610937565b9250828202610cdf81610937565b91508282048414831517610cf657610cf5610b3f565b5b5092915050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fdfea2646970667358221220214c18d0df74cffd4c5e08b9d4cbaa887d968124a8815f6bfcac85f8f42391d464736f6c63430008150033",
+  "deployedBytecode": "0x60806040526004361061009c5760003560e01c8063aa9d9bd611610064578063aa9d9bd61461017f578063ac5ece6d14610196578063b3ccc8eb146101c1578063df385306146101ec578063e02539c814610217578063e4655bca146102425761009c565b806314df33ac146100a15780631f8cdb04146100cc5780636e3bc76b146100d65780637494c875146101175780637ded653f14610154575b600080fd5b3480156100ad57600080fd5b506100b661026d565b6040516100c39190610950565b60405180910390f35b6100d4610295565b005b3480156100e257600080fd5b506100fd60048036038101906100f891906109ce565b610613565b60405161010e959493929190610a25565b60405180910390f35b34801561012357600080fd5b5061013e600480360381019061013991906109ce565b610676565b60405161014b9190610950565b60405180910390f35b34801561016057600080fd5b506101696106c2565b6040516101769190610950565b60405180910390f35b34801561018b57600080fd5b5061019461074f565b005b3480156101a257600080fd5b506101ab61078a565b6040516101b89190610a78565b60405180910390f35b3480156101cd57600080fd5b506101d66107b2565b6040516101e39190610950565b60405180910390f35b3480156101f857600080fd5b506102016107bc565b60405161020e9190610950565b60405180910390f35b34801561022357600080fd5b5061022c6107e4565b6040516102399190610950565b60405180910390f35b34801561024e57600080fd5b506102576107ed565b6040516102649190610950565b60405180910390f35b60007f0000000000000000000000000000000000000000000000000000000000000000905090565b7f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff160361031a576040517f708af72500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b61032261074f565b600034905060005481101561036c576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040161036390610af0565b60405180910390fd5b6001546000548261037d9190610b6e565b11156103be576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016103b590610beb565b60405180910390fd5b600660003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060040160009054906101000a900460ff1661055a576000600660003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020905060026000815461046490610c0b565b9190508190558160000181905550338160010160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550818160020181905550600054826104cc9190610b6e565b816003018190555060018160040160006101000a81548160ff0219169083151502179055506005339080600181540180825580915050600190039060005260206000200160009091909190916101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550506105e2565b6000600660003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000209050818160020160008282546105b19190610c53565b92505081905550600054826105c69190610b6e565b8160030160008282546105d99190610c53565b92505081905550505b600054816105f09190610b6e565b600160008282546106019190610c87565b925050819055506106106107f7565b50565b60066020528060005260406000206000915090508060000154908060010160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff16908060020154908060030154908060040160009054906101000a900460ff16905085565b6000600660008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020600301549050919050565b60007f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614610749576040517fae4a21bc00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b47905090565b600a601e600454426107619190610c87565b61076b9190610b6e565b6107759190610cbb565b6003546107829190610c87565b600081905550565b60007f0000000000000000000000000000000000000000000000000000000000000000905090565b6000600154905090565b60007f0000000000000000000000000000000000000000000000000000000000000000905090565b60008054905090565b6000600254905090565b6107ff61074f565b60005b60058054905081101561093457600054600660006005848154811061082a57610829610cfd565b5b9060005260206000200160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000206002015461089d9190610b6e565b60066000600584815481106108b5576108b4610cfd565b5b9060005260206000200160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060030181905550808061092c90610c0b565b915050610802565b50565b6000819050919050565b61094a81610937565b82525050565b60006020820190506109656000830184610941565b92915050565b600080fd5b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b600061099b82610970565b9050919050565b6109ab81610990565b81146109b657600080fd5b50565b6000813590506109c8816109a2565b92915050565b6000602082840312156109e4576109e361096b565b5b60006109f2848285016109b9565b91505092915050565b610a0481610990565b82525050565b60008115159050919050565b610a1f81610a0a565b82525050565b600060a082019050610a3a6000830188610941565b610a4760208301876109fb565b610a546040830186610941565b610a616060830185610941565b610a6e6080830184610a16565b9695505050505050565b6000602082019050610a8d60008301846109fb565b92915050565b600082825260208201905092915050565b7f62696456616c7565206c6f776572207468616e2063757272656e745072696365600082015250565b6000610ada602083610a93565b9150610ae582610aa4565b602082019050919050565b60006020820190508181036000830152610b0981610acd565b9050919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b6000610b7982610937565b9150610b8483610937565b925082610b9457610b93610b10565b5b828204905092915050565b7f4e6f7420656e6f75676820616c676f7320666f7220796f752100000000000000600082015250565b6000610bd5601983610a93565b9150610be082610b9f565b602082019050919050565b60006020820190508181036000830152610c0481610bc8565b9050919050565b6000610c1682610937565b91507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8203610c4857610c47610b3f565b5b600182019050919050565b6000610c5e82610937565b9150610c6983610937565b9250828201905080821115610c8157610c80610b3f565b5b92915050565b6000610c9282610937565b9150610c9d83610937565b9250828203905081811115610cb557610cb4610b3f565b5b92915050565b6000610cc682610937565b9150610cd183610937565b9250828202610cdf81610937565b91508282048414831517610cf657610cf5610b3f565b5b5092915050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fdfea2646970667358221220214c18d0df74cffd4c5e08b9d4cbaa887d968124a8815f6bfcac85f8f42391d464736f6c63430008150033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 7,
+        "contract": "contracts/Dutch_Auction.sol:Dutch_Auction",
+        "label": "currentPrice",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 9,
+        "contract": "contracts/Dutch_Auction.sol:Dutch_Auction",
+        "label": "currentUnsoldAlgos",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 12,
+        "contract": "contracts/Dutch_Auction.sol:Dutch_Auction",
+        "label": "totalNumBidders",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 14,
+        "contract": "contracts/Dutch_Auction.sol:Dutch_Auction",
+        "label": "startPrice",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 22,
+        "contract": "contracts/Dutch_Auction.sol:Dutch_Auction",
+        "label": "deployDate",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 36,
+        "contract": "contracts/Dutch_Auction.sol:Dutch_Auction",
+        "label": "biddersAddress",
+        "offset": 0,
+        "slot": "5",
+        "type": "t_array(t_address)dyn_storage"
+      },
+      {
+        "astId": 41,
+        "contract": "contracts/Dutch_Auction.sol:Dutch_Auction",
+        "label": "biddersList",
+        "offset": 0,
+        "slot": "6",
+        "type": "t_mapping(t_address,t_struct(Bidder)33_storage)"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_array(t_address)dyn_storage": {
+        "base": "t_address",
+        "encoding": "dynamic_array",
+        "label": "address[]",
+        "numberOfBytes": "32"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_mapping(t_address,t_struct(Bidder)33_storage)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => struct Dutch_Auction.Bidder)",
+        "numberOfBytes": "32",
+        "value": "t_struct(Bidder)33_storage"
+      },
+      "t_struct(Bidder)33_storage": {
+        "encoding": "inplace",
+        "label": "struct Dutch_Auction.Bidder",
+        "members": [
+          {
+            "astId": 24,
+            "contract": "contracts/Dutch_Auction.sol:Dutch_Auction",
+            "label": "bidderID",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 26,
+            "contract": "contracts/Dutch_Auction.sol:Dutch_Auction",
+            "label": "walletAddress",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address"
+          },
+          {
+            "astId": 28,
+            "contract": "contracts/Dutch_Auction.sol:Dutch_Auction",
+            "label": "bidValue",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 30,
+            "contract": "contracts/Dutch_Auction.sol:Dutch_Auction",
+            "label": "totalAlgosPurchased",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 32,
+            "contract": "contracts/Dutch_Auction.sol:Dutch_Auction",
+            "label": "isExist",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_bool"
+          }
+        ],
+        "numberOfBytes": "160"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}
