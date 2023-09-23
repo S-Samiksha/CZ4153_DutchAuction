@@ -1,30 +1,45 @@
 # CZ4153_DutchAuction
-Blockchain Project to build a DutchAuction 
+
+Blockchain Project to build a DutchAuction
+
+# Code run on terminal thus far
+
+- `yarn init`
+- `yarn add --dev hardhat`
+- `yarn hardhat` --> add javascript projects
+- `yarn add --dev "hardhat@^2.9.3" "@nomiclabs/hardhat-waffle@^2.0.0" "ethereum-waffle@^3.0.0" "chai@^4.2.0" "@nomiclabs/hardhat-ethers@^2.0.0" "ethers@^5.0.0" "@nomiclabs/hardhat-etherscan@^3.0.0" "dotenv@^10.0.0" "eslint@^7.29.0" "eslint-config-prettier@^8.3.0" "eslint-config-standard@^16.0.3" "eslint-plugin-import@^2.23.4" "eslint-plugin-node@^11.1.0" "eslint-plugin-prettier@^3.4.0" "eslint-plugin-promise@^5.1.0" "hardhat-gas-reporter@^1.0.4" "prettier@^2.3.2" "prettier-plugin-solidity@^1.0.0-beta.13" "solhint@^3.3.6" "solidity-coverage@^0.7.16"`
 
 ### References:
+
 https://github.com/lamtlo/Solidity-Dutch-Auction/blob/master/contracts/Auction.sol <br>
 https://www.algorand.foundation/algo-auction-overview <br>
 
 ### Ideas:
+
 For each bidder, keep track of how much money they bid. <br>
 When they bid, reduce the supply. <br>
 As the price drops periodically, each bidder will have an increasing number of algos they can receive. <br>
 After 20 minutes, "end the auction" <br>
+
 1. Distribute tokens to bidders
 2. Burn remaining tokens that were left unsold
 
 ### Problems:
+
 1. Timestamp --> running the functions every minute
-Update: no need to run every minute, can just use a function to keep track of number of tokens left
-2. FrontEnd Connection 
+   Update: no need to run every minute, can just use a function to keep track of number of tokens left
+2. FrontEnd Connection
 
 ### Bonus:
+
 Add tests to demonstrate auction contract is resistant to re-entry attack <br>
 https://www.certik.com/resources/blog/3K7ZUAKpOr1GW75J2i0VHh-what-is-a-reentracy-attack
-- basically is when another contract attacks our contract by constantly calling the withdraw function to withdraw the funds 
-- occurs b/c vulnerable smart contract first checking the balance, then sending the funds, and then finally updating its balance 
+
+- basically is when another contract attacks our contract by constantly calling the withdraw function to withdraw the funds
+- occurs b/c vulnerable smart contract first checking the balance, then sending the funds, and then finally updating its balance
 
 ### Pseudocode:
+
 ```solidity
 
 uint256 currentPrice; //in wei
@@ -37,7 +52,7 @@ struct bidder{
 uint256 bidderID;
 address walletAddress;
 uint256 bidValue; //the value they bidded
-uint256 totalAlgosPurchased; //this will change everytime somebody else bids 
+uint256 totalAlgosPurchased; //this will change everytime somebody else bids
 }
 
 //an array of bidders for FIFO allocation at the end of the auction
@@ -49,7 +64,7 @@ function addBid(uint256 walletAddress, uint256 bidValue){
 // 3. if exists, replace  the bidValue
 // 4. decrement the currentUnsoldAlgos according to the current price => currentUnsoldAlgos -= bidValue/Price
 // 5. Check if there are enough algos as well --> clearing price
-// 6. UpdateAllBiders and the current price as well 
+// 6. UpdateAllBiders and the current price as well
 }
 
 function updateAllBiders(){
@@ -73,6 +88,3 @@ function burnRemainingTokens(uint256 currentUnsoldAlgos){
 
 
 ```
-
-
-
