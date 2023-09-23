@@ -103,7 +103,7 @@ function burnRemainingTokens(uint256 currentUnsoldAlgos){
 ### Deployed to testnet (for testing, SEPOLIA):
 1. https://sepolia.etherscan.io/address/0x75bc2A1f9097837A3313C198A332f376fd7b587f#code
 
-### Updates from Melise (23/09/23):
+### Updates from Melise (23/09/23): pushed to new branch bcos got error cannot run anyway...
 1. Created chainlink upkeeps to determine the time interval --> added in helper-hardhat-config ,and deploy scripts
 2. integrated ERC20 tokens --> to be discussed. (unable to run the deploy-token scripts for some reasons...)
 3. Implemented burning of tokens in performUpkeep --> can only be tested if (2) is done properly
