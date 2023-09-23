@@ -3,7 +3,7 @@
 pragma solidity ^0.8.21;
 
 error Dutch_Auction__NotOwner();
-error Dutch_Auction__Owner();
+error Dutch_Auction__IsOwner();
 
 contract Dutch_Auction {
     /* TODO:
@@ -71,7 +71,7 @@ contract Dutch_Auction {
 
     modifier notOwner() {
         // require(msg.sender == owner);
-        if (msg.sender == i_owner) revert Dutch_Auction__Owner();
+        if (msg.sender == i_owner) revert Dutch_Auction__IsOwner();
         _; //do the rest of the function
     }
 
@@ -81,11 +81,9 @@ contract Dutch_Auction {
     function addBidder() public payable notOwner {
         //call updatePrice function
         updateCurrentPrice();
-
         //checking all the requirements
         // require(_bidValue == msg.value, "bidValue stated is not what was sent");
         uint256 _bidValue = msg.value; // alternative way
-
         require(_bidValue >= currentPrice, "bidValue lower than currentPrice"); //bidValue has to be higher inorder to purchase
         require(
             _bidValue / currentPrice <= currentUnsoldAlgos,
@@ -120,7 +118,7 @@ contract Dutch_Auction {
         //there is 60 seconds in one minute
         // 20 minutes auction
         // price drops by 10 wei every 2 minutes --> actual
-        // price drops by 10 wei every0.5 minutes --> testing purposes
+        // price drops by 10 wei every 0.5 minutes --> testing purposes
         currentPrice =
             startPrice -
             (uint256((block.timestamp - deployDate)) / 30) *
@@ -131,8 +129,12 @@ contract Dutch_Auction {
     function updateAllBiders() internal {
         //obtain current price again in case time elapsed
         updateCurrentPrice();
+        currentUnsoldAlgos = totalAlgosAvailable;
         for (uint i = 0; i < biddersAddress.length; i++) {
             biddersList[biddersAddress[i]].totalAlgosPurchased =
+                biddersList[biddersAddress[i]].bidValue /
+                currentPrice;
+            currentUnsoldAlgos -=
                 biddersList[biddersAddress[i]].bidValue /
                 currentPrice;
         }
