@@ -162,6 +162,9 @@ contract Dutch_Auction is AutomationCompatibleInterface {
             "Lower or equal to reserve price! Ending Auction!"
         );
         require(currentUnsoldAlgos > 0, "All Algos Sold! Ending Auction! ");
+        // if (currentUnsoldAlgos == 0){
+        //     endAuction();
+        // }
         require(_bidValue >= currentPrice, "bidValue lower than currentPrice"); //bidValue has to be higher inorder to purchase
         require(
             _bidValue / currentPrice <= currentUnsoldAlgos,
