@@ -18,12 +18,12 @@ contract Dutch_Auction {
     uint256 private immutable reservePrice;
     address private immutable i_owner;
     uint256 private immutable totalAlgosAvailable;
-    uint256 private deployDate;
+    uint256 private immutable startTime;
 
-    uint256 public startTime;
     uint256 public endTime;
 
     ERC20Token private immutable DAToken; //importing Token
+    address private immutable ERC20ContractAddress;
 
     struct Bidder {
         uint256 bidderID;
@@ -54,8 +54,9 @@ contract Dutch_Auction {
         currentUnsoldAlgos = _totalAlgosAvailable;
         currentPrice = _startPrice;
         startPrice = _startPrice;
-        deployDate = block.timestamp;
+        startTime = block.timestamp;
         DAToken = ERC20Token(_token);
+        ERC20ContractAddress = _token;
     }
 
     /* modifiers */
@@ -90,6 +91,7 @@ contract Dutch_Auction {
             _bidValue / currentPrice <= currentUnsoldAlgos,
             "Not enough algos for you!"
         );
+        require(block.timestamp - startTime < 1200, "time is up");
 
         // Adding or Updating the bidders currently in the contract
         if (!biddersList[msg.sender].isExist) {
@@ -122,7 +124,7 @@ contract Dutch_Auction {
         // price drops by 10 wei every 0.5 minutes --> testing purposes
         currentPrice =
             startPrice -
-            (uint256((block.timestamp - deployDate)) / 30) *
+            (uint256((block.timestamp - startTime)) / 30) *
             10;
     }
 
@@ -150,6 +152,10 @@ contract Dutch_Auction {
             biddersList[biddersAddress[i]].totalAlgosPurchased =
                 biddersList[biddersAddress[i]].bidValue /
                 currentPrice;
+            DAToken.approve(
+                biddersAddress[i],
+                biddersList[biddersAddress[i]].totalAlgosPurchased * 10 ** 18
+            );
             DAToken.transferFrom(
                 i_owner,
                 biddersAddress[i],
@@ -158,15 +164,16 @@ contract Dutch_Auction {
         }
     }
 
-    function contractAddress() public view returns (address) {
-        return address(this);
+    function endAuction() public onlyOwner {
+        sendTokens();
+        DAToken.approve(ERC20ContractAddress, currentUnsoldAlgos * 10 ** 18);
+        DAToken.transferFrom(
+            address(this),
+            ERC20ContractAddress,
+            currentUnsoldAlgos * 10 ** 18
+        );
+        DAToken.burn(currentUnsoldAlgos);
     }
-
-    function retriveDATOKEN() public view returns (uint256) {
-        return DAToken.allowance(i_owner, msg.sender);
-    }
-
-    function endAuction() internal onlyOwner {}
 
     // function burnRemainingTokens(
     //     uint256 currentUnsoldAlgos
