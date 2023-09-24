@@ -27,12 +27,26 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const Dutch_Auction = await deploy("Dutch_Auction", {
     from: deployer,
     //Arguments: reservePrice, currentPrice, NumberofAlgos
-    args: [RESERVE_PRICE, START_PRICE, INITIAL_SUPPLY_INT, ERC20Token.target, INTERVAL],
+    args: [
+      RESERVE_PRICE,
+      START_PRICE,
+      INITIAL_SUPPLY_INT,
+      ERC20Token.target,
+      INTERVAL,
+    ],
     log: true,
     // we need to wait if on a live network so we can verify properly
     waitConfirmations: network.config.blockConfirmations || 1,
   });
   log(`Dutch Auction Contract deployed at ${Dutch_Auction.address}`);
+  log("Verifying...");
+  await verify(Dutch_Auction.address, [
+    RESERVE_PRICE,
+    START_PRICE,
+    INITIAL_SUPPLY_INT,
+    ERC20Token.target,
+    INTERVAL,
+  ]);
 
   // if (
   //   !developmentChains.includes(network.name) &&
