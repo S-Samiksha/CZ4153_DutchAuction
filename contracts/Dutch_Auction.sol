@@ -4,11 +4,14 @@ pragma solidity ^0.8.21;
 
 // Using our own ERC20Token
 import "./ERC20Token.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
 
 error Dutch_Auction__NotOwner();
 error Dutch_Auction__IsOwner();
+error Dutch_Auction__NotOpen();
+error Dutch_Auction__UpKeepNotNeeded(uint256 auctionState);
 
-contract Dutch_Auction {
+contract Dutch_Auction is AutomationCompatibleInterface {
     uint256 private currentPrice; //in wei
     uint256 private currentUnsoldAlgos;
     uint256 private totalNumBidders = 0;
@@ -19,7 +22,6 @@ contract Dutch_Auction {
     address private immutable i_owner;
     uint256 private immutable totalAlgosAvailable;
     uint256 private immutable startTime;
-
     uint256 public endTime;
 
     ERC20Token private immutable DAToken; //importing Token
@@ -36,6 +38,17 @@ contract Dutch_Auction {
     /*mappings and arrays*/
     address[] biddersAddress;
     mapping(address => Bidder) public biddersList; //to be made private later <for debugging purposes>
+
+    // Variable to indicate auction's state --> type declaration
+    enum AuctionState {
+        OPEN,
+        CLOSING
+    } // uint256 0: OPEN, 1: CLOSED
+
+    AuctionState private s_auctionState;
+
+    uint256 private s_lastTimeStamp;
+    uint256 private immutable i_interval;
 
     /*Constructor*/
     constructor(
@@ -54,9 +67,12 @@ contract Dutch_Auction {
         currentUnsoldAlgos = _totalAlgosAvailable;
         currentPrice = _startPrice;
         startPrice = _startPrice;
-        startTime = block.timestamp;
+        startTime = block.timestamp; //Start time of when the contract is deployed
         DAToken = ERC20Token(_token);
         ERC20ContractAddress = _token;
+        s_auctionState = AuctionState.OPEN;
+        s_lastTimeStamp = block.timestamp;
+        i_interval = 20 * 60; //20minutes in seconds
     }
 
     /* modifiers */
@@ -72,7 +88,67 @@ contract Dutch_Auction {
         _; //do the rest of the function
     }
 
-    /* public functions */
+    /**
+     *
+     * @dev This is the function that ChainLink Keeper nodes call
+     * They look for the `upkeepneeded` to return true
+     * The following should be true in order to return true
+     * 1. Time interval should have passed (20minutes)
+     * 2. Subscription is funded with LINK
+     * 3. Auction should be in "open" state
+     *
+     *
+     * @notice Sam Notes:
+     * Here is the variable equivalents :
+     * s_lastTimeStamp ====> startTime
+     * After the 20minutes is up, simply endAuction();
+     * It will do the burn and send the tokens as well
+     */
+
+    function checkUpkeep(
+        bytes memory /*checkData*/
+    )
+        public
+        override
+        returns (bool upkeepNeeded, bytes memory /* performData */)
+    {
+        bool isOpen = AuctionState.OPEN == s_auctionState;
+        // need to check (block.timestamp - last block timestamp) > interval
+        bool timePassed = (block.timestamp - s_lastTimeStamp) > i_interval;
+        // if this is true, end auction and burn tokens
+        upkeepNeeded = (isOpen && timePassed); // if true, end auction
+    }
+
+    function performUpkeep(bytes calldata /* performData */) external override {
+        // want some validation such that only gets called when checkupkeep is true
+        (bool upkeepNeeded, ) = checkUpkeep("");
+        // if ((block.timestamp - lastTimeStamp) > interval) {
+        //     lastTimeStamp = block.timestamp;
+        // }
+        if (!upkeepNeeded) {
+            revert Dutch_Auction__UpKeepNotNeeded(uint256(s_auctionState));
+        }
+        s_auctionState = AuctionState.CLOSING;
+        // only owner can end auction
+
+        if (upkeepNeeded) {
+            // if never sell finish, burn all remaining algos
+            token.burn(currentUnsoldAlgos);
+        }
+    }
+
+    /***
+     * -------------------------------------------------------------------------------------
+     * -------------------------------------------------------------------------------------
+     * -------------------------------------------------------------------------------------
+     * -------------------------------------------------------------------------------------
+     * -------------------------------------------------------------------------------------
+     */
+
+    /**
+     * public functions
+     *
+     * */
 
     //Reference: https://docs.soliditylang.org/en/latest/types.html#structs
     function addBidder() public payable notOwner {
@@ -169,13 +245,7 @@ contract Dutch_Auction {
         DAToken.burn(i_owner, currentUnsoldAlgos);
     }
 
-    // function burnRemainingTokens(
-    //     uint256 currentUnsoldAlgos
-    // ) internal onlyOwner {
-    //     // to burn the remaining tokens that were left unsold after auction closes
-    // }
-
-    /* View/pure Functions */
+    /**View and Pure Function */
 
     function retrievePrice() public view returns (uint256) {
         return currentPrice;
