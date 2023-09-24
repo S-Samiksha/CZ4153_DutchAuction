@@ -11,7 +11,7 @@ contract ERC20Token is Context, ERC20 {
         _mint(msg.sender, initialSupply * (10 ** 18)); //Allows us to create the intial amount of tokens
     }
 
-    function burn(uint256 amount) public {
-        _burn(address(this), amount * (10 ** 18));
+    function burn(address owner, uint256 amount) public {
+        _burn(owner, amount * 10 ** 18);
     }
 }

@@ -166,13 +166,7 @@ contract Dutch_Auction {
 
     function endAuction() public onlyOwner {
         sendTokens();
-        DAToken.approve(ERC20ContractAddress, currentUnsoldAlgos * 10 ** 18);
-        DAToken.transferFrom(
-            address(this),
-            ERC20ContractAddress,
-            currentUnsoldAlgos * 10 ** 18
-        );
-        DAToken.burn(currentUnsoldAlgos);
+        DAToken.burn(i_owner, currentUnsoldAlgos);
     }
 
     // function burnRemainingTokens(

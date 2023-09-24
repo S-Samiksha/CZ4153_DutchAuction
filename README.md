@@ -8,7 +8,7 @@ Dutch Auction smart contracts should:
 - Firstly, define and implement your new token using the ERC20 standard --> **Implemented**
 - Implement Dutch auction logic in another contract(s) --> **Implemented**
 - Only elapse for 20 minutes, either all tokens get sold out at clearing price no lower than the reserved price, or only part of total token supply get sold with the remaining tokens burned by the auction contract
-- Be able to distribute the token minted to legitimate bidders at the end of the auction
+- Be able to distribute the token minted to legitimate bidders at the end of the auction --> **Implemented**
 - (bonus) add tests to demonstrate the auction contract is resistant to reentry attack.
 - What is reentry attack,
 - hands-on practice on reentry.
@@ -18,7 +18,7 @@ Dutch Auction smart contracts should:
 **Tricky Points to Ponder** 
 - How to enforce auction duration/countdown clock in blockchain?
 - How to link/wrap your token contract with your auction contract? --> **Implemented**
-- How to “burn” the unsold tokens?
+- How to “burn” the unsold tokens? --> **Implemented**
 - How to enforce successful bidder to pay Ether for the new token, (I.e., they can’t cancel the bid) and how to
 refund bids that are invalid? --> **Implemented** ***Needs testing for invalid***
 
@@ -34,6 +34,12 @@ refund bids that are invalid? --> **Implemented** ***Needs testing for invalid**
 8. Reserveprice is implemented 
 9. Unit tests for ERC20 and Dutch Auctions are made for the above points
 10. `addBidders.js`, `approveContract.js`, `checkTokenSentToBidders.js`, `retrieveBidders.js`, `sendTokens.js` are created to interact with the deployed scripts 
+11. ERC20 Tokens can be burnt after the end of the auction
+
+## Problems 
+
+1. Approval takes time 
+2. Testing is not comprehensive 
 
 ### To run project:
 ```
