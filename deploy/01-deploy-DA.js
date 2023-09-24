@@ -8,6 +8,7 @@ const {
   INITIAL_SUPPLY,
   RESERVE_PRICE,
   START_PRICE,
+  INTERVAL,
 } = require("../helper-hardhat-config");
 const { network, ethers } = require("hardhat");
 const { verify } = require("../utils/verify");
@@ -26,7 +27,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const Dutch_Auction = await deploy("Dutch_Auction", {
     from: deployer,
     //Arguments: reservePrice, currentPrice, NumberofAlgos
-    args: [RESERVE_PRICE, START_PRICE, INITIAL_SUPPLY_INT, ERC20Token.target],
+    args: [RESERVE_PRICE, START_PRICE, INITIAL_SUPPLY_INT, ERC20Token.target, INTERVAL],
     log: true,
     // we need to wait if on a live network so we can verify properly
     waitConfirmations: network.config.blockConfirmations || 1,
