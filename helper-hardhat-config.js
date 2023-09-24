@@ -9,9 +9,18 @@ const networkConfig = {
   },
 };
 
+const INITIAL_SUPPLY_INT = 200;
+const INITIAL_SUPPLY = (INITIAL_SUPPLY_INT * 10 ** 18).toString();
+const RESERVE_PRICE = 10;
+const START_PRICE = 50;
+
 const developmentChains = ["hardhat", "localhost"];
 
 module.exports = {
   networkConfig,
   developmentChains,
+  INITIAL_SUPPLY,
+  INITIAL_SUPPLY_INT,
+  RESERVE_PRICE,
+  START_PRICE,
 };

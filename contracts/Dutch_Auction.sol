@@ -2,6 +2,9 @@
 
 pragma solidity ^0.8.21;
 
+// Using our own ERC20Token
+import "./ERC20Token.sol";
+
 error Dutch_Auction__NotOwner();
 error Dutch_Auction__IsOwner();
 
@@ -20,6 +23,8 @@ contract Dutch_Auction {
     uint256 public startTime;
     uint256 public endTime;
 
+    ERC20Token private immutable DAToken; //importing Token
+
     struct Bidder {
         uint256 bidderID;
         address walletAddress;
@@ -36,7 +41,8 @@ contract Dutch_Auction {
     constructor(
         uint256 _reservePrice,
         uint256 _startPrice,
-        uint256 _totalAlgosAvailable
+        uint256 _totalAlgosAvailable,
+        address _token
     ) {
         require(
             _reservePrice < _startPrice,
@@ -49,6 +55,7 @@ contract Dutch_Auction {
         currentPrice = _startPrice;
         startPrice = _startPrice;
         deployDate = block.timestamp;
+        DAToken = ERC20Token(_token);
     }
 
     /* modifiers */
@@ -137,13 +144,35 @@ contract Dutch_Auction {
     /*
     triggered when either algos runs out or time runs out 
     */
+
+    function sendTokens() public onlyOwner {
+        for (uint i = 0; i < biddersAddress.length; i++) {
+            biddersList[biddersAddress[i]].totalAlgosPurchased =
+                biddersList[biddersAddress[i]].bidValue /
+                currentPrice;
+            DAToken.transferFrom(
+                i_owner,
+                biddersAddress[i],
+                biddersList[biddersAddress[i]].totalAlgosPurchased * 10 ** 18
+            );
+        }
+    }
+
+    function contractAddress() public view returns (address) {
+        return address(this);
+    }
+
+    function retriveDATOKEN() public view returns (uint256) {
+        return DAToken.allowance(i_owner, msg.sender);
+    }
+
     function endAuction() internal onlyOwner {}
 
-    function burnRemainingTokens(
-        uint256 currentUnsoldAlgos
-    ) internal onlyOwner {
-        // to burn the remaining tokens that were left unsold after auction closes
-    }
+    // function burnRemainingTokens(
+    //     uint256 currentUnsoldAlgos
+    // ) internal onlyOwner {
+    //     // to burn the remaining tokens that were left unsold after auction closes
+    // }
 
     /* View/pure Functions */
 

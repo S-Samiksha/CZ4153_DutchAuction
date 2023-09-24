@@ -2,6 +2,15 @@
 
 Blockchain Project to build a DutchAuction
 
+# ERC20 and EIP
+- Ethereum Improvement Protocol --> once they get enough insights they become ERC
+- Ethereum request for comments (BEP, PEP)
+- Numbered chronologically 
+- Deployed on a chain using ERC20 token standard 
+- Governance tokens, secure an underlying network, create a synthetic asset
+- build a smart contract that follows the token standard 
+- 
+
 # Things to do:
    1. Stop the auction automatically when 20 minutes is up 
    2. Check in there is enough algos in the first place, if it has already hit 0, stop the auction 
