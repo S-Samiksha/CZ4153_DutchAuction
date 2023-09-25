@@ -55,7 +55,8 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         uint256 _reservePrice,
         uint256 _startPrice,
         uint256 _totalAlgosAvailable,
-        address _token
+        address _token,
+        uint256 _interval
     ) {
         require(
             _reservePrice < _startPrice,
@@ -72,7 +73,8 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         ERC20ContractAddress = _token;
         s_auctionState = AuctionState.OPEN;
         s_lastTimeStamp = block.timestamp;
-        i_interval = 20 * 60; //20minutes in seconds
+        // i_interval = 20 * 60; //20minutes in seconds
+        i_interval = _interval;
     }
 
     /* modifiers */
@@ -133,7 +135,7 @@ contract Dutch_Auction is AutomationCompatibleInterface {
 
         if (upkeepNeeded) {
             // if never sell finish, burn all remaining algos
-            token.burn(currentUnsoldAlgos);
+            endAuction();
         }
     }
 
