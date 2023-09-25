@@ -40,7 +40,8 @@ refund bids that are invalid? --> **Implemented** ***Needs testing for invalid**
 
 1. Approval takes time 
 2. bidValue will reduce due to gas fees (so how much you send over is actually affected by gas price)
-3. how to implement reserve price and 0 tokens 
+3. how to implement reserve price and 0 tokens
+4. Loss of precision and ETH in division operations  
 
 ### To run project:
 ```

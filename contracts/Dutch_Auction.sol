@@ -185,7 +185,7 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         } else {
             Bidder storage existingBidder = biddersList[msg.sender]; //get the object
             existingBidder.bidValue += _bidValue;
-            existingBidder.totalAlgosPurchased += _bidValue / currentPrice;
+            existingBidder.totalAlgosPurchased += _bidValue / currentPrice; //must be careful due to loss of precision
         }
 
         //Updating private variables in the contract
