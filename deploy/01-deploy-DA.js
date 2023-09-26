@@ -40,13 +40,19 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   });
   log(`Dutch Auction Contract deployed at ${Dutch_Auction.address}`);
   log("Verifying...");
-  await verify(Dutch_Auction.address, [
-    RESERVE_PRICE,
-    START_PRICE,
-    INITIAL_SUPPLY_INT,
-    ERC20Token.target,
-    INTERVAL,
-  ]);
+
+  if (
+    !developmentChains.includes(network.name) &&
+    process.env.ETHERSCAN_API_KEY
+  ) {
+    await verify(Dutch_Auction.address, [
+      RESERVE_PRICE,
+      START_PRICE,
+      INITIAL_SUPPLY_INT,
+      ERC20Token.target,
+      INTERVAL,
+    ]);
+  }
 
   // if (
   //   !developmentChains.includes(network.name) &&

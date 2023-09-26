@@ -203,10 +203,13 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         // 20 minutes auction
         // price drops by 10 wei every 2 minutes --> actual
         // price drops by 10 wei every 0.5 minutes --> testing purposes
-        currentPrice =
-            startPrice -
-            (uint256((block.timestamp - startTime)) / 30) *
-            10;
+        // uint256 timeElapsed = block.timestamp - startTime;
+        // uint256 remainder = timeElapsed % 30;
+        // uint256 multipleV = timeElapsed - remainder;
+        // if (multipleV * 10 < startPrice) {
+        //     currentPrice = startPrice - multipleV * 10;
+        // }
+        currentPrice = startPrice - ((block.timestamp - startTime) / 30) * 10;
     }
 
     //TODO: can we use IPFS to save gas and make this better?

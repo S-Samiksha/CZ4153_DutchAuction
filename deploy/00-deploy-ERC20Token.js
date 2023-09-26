@@ -2,6 +2,7 @@ const { network } = require("hardhat");
 const {
   developmentChains,
   INITIAL_SUPPLY_INT,
+  INITIAL_SUPPLY,
 } = require("../helper-hardhat-config");
 const { verify } = require("../utils/verify");
 

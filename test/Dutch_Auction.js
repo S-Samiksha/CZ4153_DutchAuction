@@ -448,7 +448,7 @@ const {
          * Checking if the ERC20 tokens are sent properly
          *
          */
-        it("Checking if the ERC20 Tokens are sent properly", async () => {
+        it("Checking if the ERC20 Tokens are sent properly part 1", async () => {
           await Dutch_Auction_u_1.addBidder({
             value: ethers.parseEther("0.000000000000001"),
           });
@@ -473,7 +473,7 @@ const {
           expect(await ERC20Token.balanceOf(userThree)).to.equal(tokensToSend1);
         });
 
-        it("Checking if the ERC20 Tokens are sent properly", async () => {
+        it("Checking if the ERC20 Tokens are sent properly part 2", async () => {
           await Dutch_Auction_u_1.addBidder({
             value: ethers.parseEther("0.000000000000001"),
           });
@@ -486,10 +486,13 @@ const {
           await Dutch_Auction_u_3.addBidder({
             value: ethers.parseEther("0.000000000000001"),
           });
-          await time.increase(150);
+          await time.increase(80);
           await Dutch_Auction_u_3.addBidder({
             value: ethers.parseEther("0.000000000000001"),
           });
+
+          const transactionResponse = await Dutch_Auction_d.sendTokens();
+          await transactionResponse.wait();
 
           const response0 = await Dutch_Auction_d.retrieveBidderAlgos(userOne);
           const response1 = await Dutch_Auction_d.retrieveBidderAlgos(userTwo);
@@ -497,7 +500,7 @@ const {
           const tokensToSend1 = ethers.parseEther(response1.toString());
           expect(await ERC20Token.balanceOf(userOne)).to.equal(tokensToSend);
           expect(await ERC20Token.balanceOf(userTwo)).to.equal(tokensToSend1);
-          expect(await ERC20Token.balanceOf(userThree)).to.equal(tokensToSend1);
+          expect(await ERC20Token.balanceOf(userThree)).to.equal(tokensToSend);
         });
       });
     });
