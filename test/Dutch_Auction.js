@@ -316,10 +316,18 @@ const {
           );
           const response3 = await Dutch_Auction_d.retrieveContractBalance();
           const response4 = await Dutch_Auction_d.retrieveTotalBidder();
+          const response5 = await Dutch_Auction_d.retrieveBidderBidValue(
+            userOne
+          );
+          const response6 = await Dutch_Auction_d.retrieveBidderBidValue(
+            userTwo
+          );
           assert.equal(response, 140);
           assert.equal(response2, 40);
           assert.equal(response3, 3000);
           assert.equal(response4, 2);
+          assert.equal(response5, 2000);
+          assert.equal(response6, 1000);
         });
 
         /**

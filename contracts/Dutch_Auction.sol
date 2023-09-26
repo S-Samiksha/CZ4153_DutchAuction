@@ -283,4 +283,10 @@ contract Dutch_Auction is AutomationCompatibleInterface {
     function retrieveBidderAlgos(address bidder) public view returns (uint256) {
         return biddersList[bidder].totalAlgosPurchased;
     }
+
+    function retrieveBidderBidValue(
+        address bidder
+    ) public view returns (uint256) {
+        return biddersList[bidder].bidValue;
+    }
 }
