@@ -4,7 +4,18 @@
 
 const { assert, expect } = require("chai");
 const { network, deployments, ethers } = require("hardhat");
+<<<<<<< Updated upstream
 const { developmentChains } = require("../helper-hardhat-config");
+=======
+const {
+  developmentChains,
+  INITIAL_SUPPLY,
+  INITIAL_SUPPLY_INT,
+  RESERVE_PRICE,
+  START_PRICE,
+  INTERVAL
+} = require("../helper-hardhat-config");
+>>>>>>> Stashed changes
 const {
   time,
   helpers,
@@ -45,6 +56,15 @@ const {
           "Dutch_Auction",
           userThree
         );
+<<<<<<< Updated upstream
+=======
+        interval = await Dutch_Auction_d.getInterval();
+        const transactionResponse = await ERC20Token.approve(
+          Dutch_Auction_d.target,
+          INITIAL_SUPPLY
+        );
+        await transactionResponse.wait();
+>>>>>>> Stashed changes
       });
 
       /**
@@ -72,6 +92,14 @@ const {
           const response = await Dutch_Auction_d.retrieveContractOwner();
           assert.equal(response, deployer);
         });
+        it("initialises auction state correctly", async()=>{
+          const auctionState = (await Dutch_Auction_d.getAuctionState()).toString()
+          assert.equal(auctionState.toString(), "0")
+          assert.equal(
+            interval.toString(),
+            INTERVAL,
+        )
+        })
       });
 
       /**
@@ -294,5 +322,101 @@ const {
           );
           assert(response, 10);
         });
+<<<<<<< Updated upstream
+=======
+        /**
+         * Checking if the ERC20 tokens are sent properly
+         *
+         */
+        it("Checking if the ERC20 Tokens are sent properly", async () => {
+          await Dutch_Auction_u_1.addBidder({
+            value: ethers.parseEther("0.000000000000001"),
+          });
+          await Dutch_Auction_u_2.addBidder({
+            value: ethers.parseEther("0.000000000000001"),
+          });
+          await Dutch_Auction_u_1.addBidder({
+            value: ethers.parseEther("0.000000000000001"),
+          });
+          await Dutch_Auction_u_3.addBidder({
+            value: ethers.parseEther("0.000000000000001"),
+          });
+          const transactionResponse = await Dutch_Auction_d.sendTokens();
+          await transactionResponse.wait();
+
+          const response0 = await Dutch_Auction_d.retrieveBidderAlgos(userOne);
+          const response1 = await Dutch_Auction_d.retrieveBidderAlgos(userTwo);
+          const tokensToSend = ethers.parseEther(response0.toString());
+          const tokensToSend1 = ethers.parseEther(response1.toString());
+          expect(await ERC20Token.balanceOf(userOne)).to.equal(tokensToSend);
+          expect(await ERC20Token.balanceOf(userTwo)).to.equal(tokensToSend1);
+          expect(await ERC20Token.balanceOf(userThree)).to.equal(tokensToSend1);
+        });
+
+        // it("Checking if the ERC20 Tokens are sent properly", async () => {
+        //   await Dutch_Auction_u_1.addBidder({
+        //     value: ethers.parseEther("0.000000000000001"),
+        //   });
+        //   await Dutch_Auction_u_2.addBidder({
+        //     value: ethers.parseEther("0.000000000000001"),
+        //   });
+        //   await Dutch_Auction_u_1.addBidder({
+        //     value: ethers.parseEther("0.000000000000001"),
+        //   });
+        //   await Dutch_Auction_u_3.addBidder({
+        //     value: ethers.parseEther("0.000000000000001"),
+        //   });
+        //   await time.increase(150);
+        //   await Dutch_Auction_u_3.addBidder({
+        //     value: ethers.parseEther("0.000000000000001"),
+        //   });
+
+        //   const response0 = await Dutch_Auction_d.retrieveBidderAlgos(userOne);
+        //   const response1 = await Dutch_Auction_d.retrieveBidderAlgos(userTwo);
+        //   const tokensToSend = ethers.parseEther(response0.toString());
+        //   const tokensToSend1 = ethers.parseEther(response1.toString());
+        //   expect(await ERC20Token.balanceOf(userOne)).to.equal(tokensToSend);
+        //   expect(await ERC20Token.balanceOf(userTwo)).to.equal(tokensToSend1);
+        //   expect(await ERC20Token.balanceOf(userThree)).to.equal(tokensToSend1);
+        // });
+      });
+      describe("checkUpkeep", function (){
+        // to test that auction will not start if status is not opened
+        it("returns true if enough time has passed and raffle is open", async ()=>{
+          await Dutch_Auction_d.setStateToOpen();
+          const intervalNum = Number(interval);
+          await network.provider.send("evm_increaseTime", [intervalNum + 1])
+          await network.provider.request({ method: "evm_mine", params: [] })
+          const { upkeepNeeded } = await Dutch_Auction_d.callStatic.checkUpkeep("0x")
+          assert(upkeepNeeded)
+        });
+      });
+      describe("performUpkeep", function (){
+        it("can only run if checkupkeep is true", async () => {
+          await Dutch_Auction_d.setStateToOpen();
+          const intervalNum = Number(interval);
+          await network.provider.send("evm_increaseTime", [intervalNum + 1])
+          await network.provider.request({ method: "evm_mine", params: [] })
+          const tx = await Dutch_Auction_d.performUpkeep("0x")
+          assert(tx)
+      })
+      it("reverts if checkupkeep is false", async () => {
+        await expect(Dutch_Auction_d.performUpkeep("0x")).to.be.revertedWith(
+            "Dutch_Auction__UpKeepNotNeeded",
+        )
+    })
+        it("updates auction state and ensures endAuction is called", async ()=>{
+          await Dutch_Auction_d.setStateToOpen();
+          const intervalNum = Number(interval);
+          await network.provider.send("evm_increaseTime", [intervalNum + 1])
+          await network.provider.request({ method: "evm_mine", params: [] })
+          const txResponse = await Dutch_Auction_d.performUpkeep("0x") // emits requestId
+          const txReceipt = await txResponse.wait(1) // waits 1 block
+          const auctionState = await Dutch_Auction_d.getAuctionState() // updates state
+          const requestId = txReceipt.events[1].args.requestId
+          assert(requestId.toNumber() > 0)
+          assert(auctionState == 1) // 0 = open, 1 = calculating
+        });
+>>>>>>> Stashed changes
       });
     });
