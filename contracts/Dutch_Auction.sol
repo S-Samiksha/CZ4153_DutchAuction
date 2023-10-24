@@ -155,7 +155,7 @@ contract Dutch_Auction is AutomationCompatibleInterface {
     //Reference: https://docs.soliditylang.org/en/latest/types.html#structs
     function addBidder() public payable notOwner {
         //call updatePrice function
-        updateCurrentPrice();
+        updateAllBiders();
         //checking all the requirements
         // require(_bidValue == msg.value, "bidValue stated is not what was sent");
         uint256 _bidValue = msg.value; // alternative way
@@ -232,6 +232,7 @@ contract Dutch_Auction is AutomationCompatibleInterface {
     */
 
     function sendTokens() public onlyOwner {
+        updateAllBiders();
         for (uint i = 0; i < biddersAddress.length; i++) {
             biddersList[biddersAddress[i]].totalAlgosPurchased =
                 biddersList[biddersAddress[i]].bidValue /

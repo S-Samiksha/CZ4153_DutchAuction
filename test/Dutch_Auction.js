@@ -432,7 +432,7 @@ const {
           await Dutch_Auction_u_1.addBidder({
             value: ethers.parseEther("0.000000000000001"),
           });
-          await time.increase(150);
+          await time.increase(130);
           const response = await Dutch_Auction_d.retrievePrice();
 
           await expect(
@@ -486,10 +486,7 @@ const {
           await Dutch_Auction_u_3.addBidder({
             value: ethers.parseEther("0.000000000000001"),
           });
-          await time.increase(80);
-          await Dutch_Auction_u_3.addBidder({
-            value: ethers.parseEther("0.000000000000001"),
-          });
+          await time.increase(90);
 
           const transactionResponse = await Dutch_Auction_d.sendTokens();
           await transactionResponse.wait();
@@ -500,7 +497,7 @@ const {
           const tokensToSend1 = ethers.parseEther(response1.toString());
           expect(await ERC20Token.balanceOf(userOne)).to.equal(tokensToSend);
           expect(await ERC20Token.balanceOf(userTwo)).to.equal(tokensToSend1);
-          expect(await ERC20Token.balanceOf(userThree)).to.equal(tokensToSend);
+          expect(await ERC20Token.balanceOf(userThree)).to.equal(tokensToSend1);
         });
       });
     });
