@@ -203,7 +203,7 @@ const {
           assert.equal(responseRP, RESERVE_PRICE);
         });
         it("sets the currentPrice addresses correctly", async () => {
-          const responseCP = await Dutch_Auction_d.retrievePrice();
+          const responseCP = await Dutch_Auction_d.retrieveCurrentPrice();
           assert.equal(responseCP, START_PRICE);
         });
         it("sets the number of Algos correctly", async () => {
@@ -223,27 +223,6 @@ const {
 
       describe("addBidder", function () {
         /**
-         * The user cannot bid if the user send less wei than rquired to buy even one algo
-         */
-        it("Fails if you send a bid value lower than the current Wei Price", async () => {
-          await expect(
-            Dutch_Auction_u_1.addBidder({
-              value: ethers.parseEther("0.00000000000000002"),
-            })
-          ).to.be.revertedWith("bidValue lower than currentPrice");
-        });
-        /**
-         * The user cannot bid if the user sends way too many wei than there is algo
-         */
-        it("Fails if you send too much money and there is not enough algo", async () => {
-          await expect(
-            Dutch_Auction_u_1.addBidder({
-              value: ethers.parseEther("0.00000000000002"),
-            })
-          ).to.be.revertedWith("Not enough algos for you!");
-        });
-
-        /**
          *  The owner should not be able to bid
          */
         it("Fails if owner tried to bid", async () => {
@@ -261,45 +240,34 @@ const {
          * User One bids
          * Test if the remainingAlgos, BidderAlgos and contract balance are all updated correctly
          */
-        it("Updates the total algos unsold available for one user", async () => {
+        it("Updates the contract balance for one user", async () => {
           await Dutch_Auction_u_1.addBidder({
             value: ethers.parseEther("0.000000000000001"),
           });
-          const response = await Dutch_Auction_u_1.retrieveAlgosRemaining();
-          const response2 = await Dutch_Auction_u_1.retrieveBidderAlgos(
-            userOne
-          );
-          const response3 = await Dutch_Auction_d.retrieveContractBalance();
-          assert.equal(response, 180);
-          assert.equal(response2, 20);
-          assert.equal(response3, 1000);
+          const response = await Dutch_Auction_d.retrieveContractBalance();
+          assert.equal(response, 1000);
         });
 
         /**
          * User One and Two bids
          * Test if the remainingAlgos, BidderAlgos and contract balance are all updated correctly
          */
-        it("Updates the total algos unsold available for two users", async () => {
+        it("Updates the current balance for two users", async () => {
           await Dutch_Auction_u_1.addBidder({
             value: ethers.parseEther("0.000000000000001"),
           });
           await Dutch_Auction_u_2.addBidder({
             value: ethers.parseEther("0.000000000000001"),
           });
-          const response = await Dutch_Auction_u_2.retrieveAlgosRemaining();
-          const response2 = await Dutch_Auction_u_2.retrieveBidderAlgos(
-            userTwo
-          );
-          const response3 = await Dutch_Auction_d.retrieveContractBalance();
-          assert.equal(response, 160);
-          assert.equal(response2, 20);
-          assert.equal(response3, 2000);
+          const response = await Dutch_Auction_d.retrieveContractBalance();
+          assert.equal(response, 2000);
         });
 
         /**
          * User One and Two bids, Then user one bids again
          * Test if the remainingAlgos, BidderAlgos, TotalBidders and contract balance are all updated correctly
          */
+
         it("Updates the total algos unsold available for one existing users", async () => {
           await Dutch_Auction_u_1.addBidder({
             value: ethers.parseEther("0.000000000000001"),
@@ -310,140 +278,20 @@ const {
           await Dutch_Auction_u_1.addBidder({
             value: ethers.parseEther("0.000000000000001"),
           });
-          const response = await Dutch_Auction_u_1.retrieveAlgosRemaining();
-          const response2 = await Dutch_Auction_u_1.retrieveBidderAlgos(
+          const response1 = await Dutch_Auction_d.retrieveContractBalance();
+          const response2 = await Dutch_Auction_d.retrieveTotalBidder();
+          const response3 = await Dutch_Auction_d.retrieveBidderBidValue(
             userOne
           );
-          const response3 = await Dutch_Auction_d.retrieveContractBalance();
-          const response4 = await Dutch_Auction_d.retrieveTotalBidder();
-          const response5 = await Dutch_Auction_d.retrieveBidderBidValue(
-            userOne
-          );
-          const response6 = await Dutch_Auction_d.retrieveBidderBidValue(
+          const response4 = await Dutch_Auction_d.retrieveBidderBidValue(
             userTwo
           );
-          assert.equal(response, 140);
-          assert.equal(response2, 40);
-          assert.equal(response3, 3000);
-          assert.equal(response4, 2);
-          assert.equal(response5, 2000);
-          assert.equal(response6, 1000);
+          assert.equal(response1, 3000);
+          assert.equal(response2, 2);
+          assert.equal(response3, 2000);
+          assert.equal(response4, 1000);
         });
 
-        /**
-         * price drops by 10 wei after every 0.5 minutes
-         * user one puts in 1000 wei with current price 50 wei => algos = 20
-         * user two puts in 1000 wei with current price 50 wei => algos = 20
-         * user one puts in 1000 wei again with current price 50 wei => algos = 40
-         * user three puts in 1000 wei after 1.5 minutes with current price 20 wei
-         * in the end, user one: bidValue=2000 wei => algos = 100
-         *             user two: bidValue=1000 wei => algos = 50
-         *             user three: bidValue=1000 wei => algos = 50
-         *             remainingalgos = 200-100-50-50=0
-         */
-        it("Updates the total algos, price unsold available for after the price reduces", async () => {
-          await Dutch_Auction_u_1.addBidder({
-            value: ethers.parseEther("0.000000000000001"),
-          });
-          await Dutch_Auction_u_2.addBidder({
-            value: ethers.parseEther("0.000000000000001"),
-          });
-          await Dutch_Auction_u_1.addBidder({
-            value: ethers.parseEther("0.000000000000001"),
-          });
-          await time.increase(90);
-          await Dutch_Auction_u_3.addBidder({
-            value: ethers.parseEther("0.000000000000001"),
-          });
-          const response = await Dutch_Auction_d.retrieveAlgosRemaining();
-          const response2 = await Dutch_Auction_d.retrieveBidderAlgos(userOne);
-          const response3 = await Dutch_Auction_d.retrieveBidderAlgos(userTwo);
-          const response4 = await Dutch_Auction_d.retrieveBidderAlgos(
-            userThree
-          );
-          const response5 = await Dutch_Auction_d.retrievePrice();
-          const response6 = await Dutch_Auction_d.retrieveContractBalance();
-          const response7 = await Dutch_Auction_d.retrieveTotalBidder();
-          assert.equal(response5, 20);
-          assert.equal(response, 0);
-          assert.equal(response2, 100);
-          assert.equal(response3, 50);
-          assert.equal(response4, 50);
-          assert.equal(response6, 4000);
-          assert.equal(response7, 3);
-        });
-        /**
-         * Follow the previous set up
-         * if another user attempts to add bid values, it should revert an error saying there is all Algos are sold
-         */
-        it("Does not allow user to send wei if there are no more algos left", async () => {
-          await Dutch_Auction_u_1.addBidder({
-            value: ethers.parseEther("0.000000000000001"),
-          });
-          await Dutch_Auction_u_2.addBidder({
-            value: ethers.parseEther("0.000000000000001"),
-          });
-          await Dutch_Auction_u_1.addBidder({
-            value: ethers.parseEther("0.000000000000001"),
-          });
-          await time.increase(90);
-          await Dutch_Auction_u_3.addBidder({
-            value: ethers.parseEther("0.000000000000001"),
-          });
-          await expect(
-            Dutch_Auction_u_1.addBidder({
-              value: ethers.parseEther("0.000000000000001"),
-            })
-          ).to.be.revertedWith("All Algos Sold! Ending Auction! ");
-        });
-        /**
-         * Follow the previous set up
-         * if another user attempts to add bid values, it should revert an error saying there is all Algos are sold
-         */
-        it("Ends Auction when all algos are sold", async () => {
-          await Dutch_Auction_u_1.addBidder({
-            value: ethers.parseEther("0.000000000000001"),
-          });
-          await Dutch_Auction_u_2.addBidder({
-            value: ethers.parseEther("0.000000000000001"),
-          });
-          await Dutch_Auction_u_1.addBidder({
-            value: ethers.parseEther("0.000000000000001"),
-          });
-          await time.increase(90);
-          await expect(
-            Dutch_Auction_u_3.addBidder({
-              value: ethers.parseEther("0.000000000000004"),
-            })
-          ).to.be.revertedWith("Not enough algos for you!");
-        });
-        /**
-         * Follow the previous set up
-         * if another user attempts to add bid values after it is below reserve price,
-         * it should revert an error saying current price is lower than reserver price and stop the auction
-         */
-        it("Ends Auction if reserve Price is hit", async () => {
-          await Dutch_Auction_u_1.addBidder({
-            value: ethers.parseEther("0.000000000000001"),
-          });
-          await Dutch_Auction_u_2.addBidder({
-            value: ethers.parseEther("0.000000000000001"),
-          });
-          await Dutch_Auction_u_1.addBidder({
-            value: ethers.parseEther("0.000000000000001"),
-          });
-          await time.increase(130);
-          const response = await Dutch_Auction_d.retrievePrice();
-
-          await expect(
-            Dutch_Auction_u_3.addBidder({
-              value: ethers.parseEther("0.000000000000001"),
-            })
-          ).to.be.revertedWith(
-            "Lower or equal to reserve price! Ending Auction!"
-          );
-          assert(response, 10);
-        });
         /**
          * Checking if the ERC20 tokens are sent properly
          *
@@ -461,7 +309,8 @@ const {
           await Dutch_Auction_u_3.addBidder({
             value: ethers.parseEther("0.000000000000001"),
           });
-          const transactionResponse = await Dutch_Auction_d.sendTokens();
+
+          const transactionResponse = await Dutch_Auction_d.endAuction();
           await transactionResponse.wait();
 
           const response0 = await Dutch_Auction_d.retrieveBidderAlgos(userOne);
@@ -488,7 +337,7 @@ const {
           });
           await time.increase(90);
 
-          const transactionResponse = await Dutch_Auction_d.sendTokens();
+          const transactionResponse = await Dutch_Auction_d.endAuction();
           await transactionResponse.wait();
 
           const response0 = await Dutch_Auction_d.retrieveBidderAlgos(userOne);

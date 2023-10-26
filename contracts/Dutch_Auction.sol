@@ -11,18 +11,17 @@ error Dutch_Auction__IsOwner();
 error Dutch_Auction__NotOpen();
 error Dutch_Auction__UpKeepNotNeeded(uint256 auctionState);
 
-contract Dutch_Auction is AutomationCompatibleInterface {
-    uint256 private currentPrice; //in wei
-    uint256 private currentUnsoldAlgos;
+//is AutomationCompatibleInterface
+contract Dutch_Auction {
+    int256 private currentPrice; //in wei
     uint256 private totalNumBidders = 0;
-    uint256 private startPrice; //in wei
-
-    /* Set in constructor, cannot be changed afterwards, only retrived */
+    uint256 private immutable startPrice; //in wei
     uint256 private immutable reservePrice;
     address private immutable i_owner;
     uint256 private immutable totalAlgosAvailable;
     uint256 private immutable startTime;
-    uint256 public endTime;
+    uint256 private constant AUCTION_TIME = 120; //in seconds
+    uint256 private currentUnsoldAlgos;
 
     ERC20Token private immutable DAToken; //importing Token
     address private immutable ERC20ContractAddress;
@@ -31,7 +30,8 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         uint256 bidderID;
         address walletAddress;
         uint256 bidValue; //the value they paid to the contract to purchase the algo
-        uint256 totalAlgosPurchased; //this will change everytime somebody else bids
+        uint256 totalAlgosPurchased;
+        uint256 refundEth;
         bool isExist;
     }
 
@@ -46,7 +46,6 @@ contract Dutch_Auction is AutomationCompatibleInterface {
     } // uint256 0: OPEN, 1: CLOSED
 
     AuctionState private s_auctionState;
-
     uint256 private s_lastTimeStamp;
     uint256 private immutable i_interval;
 
@@ -65,16 +64,11 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         i_owner = msg.sender;
         reservePrice = _reservePrice;
         totalAlgosAvailable = _totalAlgosAvailable;
-        currentUnsoldAlgos = _totalAlgosAvailable;
-        currentPrice = _startPrice;
+        currentPrice = int256(_startPrice);
         startPrice = _startPrice;
         startTime = block.timestamp; //Start time of when the contract is deployed
         DAToken = ERC20Token(_token);
         ERC20ContractAddress = _token;
-        s_auctionState = AuctionState.OPEN;
-        s_lastTimeStamp = block.timestamp;
-        // i_interval = 20 * 60; //20minutes in seconds
-        i_interval = _interval;
     }
 
     /* modifiers */
@@ -107,37 +101,37 @@ contract Dutch_Auction is AutomationCompatibleInterface {
      * It will do the burn and send the tokens as well
      */
 
-    function checkUpkeep(
-        bytes memory /*checkData*/
-    )
-        public
-        override
-        returns (bool upkeepNeeded, bytes memory /* performData */)
-    {
-        bool isOpen = AuctionState.OPEN == s_auctionState;
-        // need to check (block.timestamp - last block timestamp) > interval
-        bool timePassed = (block.timestamp - s_lastTimeStamp) > i_interval;
-        // if this is true, end auction and burn tokens
-        upkeepNeeded = (isOpen && timePassed); // if true, end auction
-    }
+    // function checkUpkeep(
+    //     bytes memory /*checkData*/
+    // )
+    //     public
+    //     override
+    //     returns (bool upkeepNeeded, bytes memory /* performData */)
+    // {
+    //     bool isOpen = AuctionState.OPEN == s_auctionState;
+    //     // need to check (block.timestamp - last block timestamp) > interval
+    //     bool timePassed = (block.timestamp - s_lastTimeStamp) > i_interval;
+    //     // if this is true, end auction and burn tokens
+    //     upkeepNeeded = (isOpen && timePassed); // if true, end auction
+    // }
 
-    function performUpkeep(bytes calldata /* performData */) external override {
-        // want some validation such that only gets called when checkupkeep is true
-        (bool upkeepNeeded, ) = checkUpkeep("");
-        // if ((block.timestamp - lastTimeStamp) > interval) {
-        //     lastTimeStamp = block.timestamp;
-        // }
-        if (!upkeepNeeded) {
-            revert Dutch_Auction__UpKeepNotNeeded(uint256(s_auctionState));
-        }
-        s_auctionState = AuctionState.CLOSING;
-        // only owner can end auction
+    // function performUpkeep(bytes calldata /* performData */) external override {
+    //     // want some validation such that only gets called when checkupkeep is true
+    //     (bool upkeepNeeded, ) = checkUpkeep("");
+    //     // if ((block.timestamp - lastTimeStamp) > interval) {
+    //     //     lastTimeStamp = block.timestamp;
+    //     // }
+    //     if (!upkeepNeeded) {
+    //         revert Dutch_Auction__UpKeepNotNeeded(uint256(s_auctionState));
+    //     }
+    //     s_auctionState = AuctionState.CLOSING;
+    //     // only owner can end auction
 
-        if (upkeepNeeded) {
-            // if never sell finish, burn all remaining algos
-            endAuction();
-        }
-    }
+    //     if (upkeepNeeded) {
+    //         // if never sell finish, burn all remaining algos
+    //         endAuction();
+    //     }
+    // }
 
     /***
      * -------------------------------------------------------------------------------------
@@ -154,76 +148,36 @@ contract Dutch_Auction is AutomationCompatibleInterface {
 
     //Reference: https://docs.soliditylang.org/en/latest/types.html#structs
     function addBidder() public payable notOwner {
-        //call updatePrice function
-        updateAllBiders();
         //checking all the requirements
-        // require(_bidValue == msg.value, "bidValue stated is not what was sent");
-        uint256 _bidValue = msg.value; // alternative way
-        require(
-            reservePrice < currentPrice,
-            "Lower or equal to reserve price! Ending Auction!"
-        );
-        require(currentUnsoldAlgos > 0, "All Algos Sold! Ending Auction! ");
-        // if (currentUnsoldAlgos == 0){
-        //     endAuction();
-        // }
-        require(_bidValue >= currentPrice, "bidValue lower than currentPrice"); //bidValue has to be higher inorder to purchase
-        require(
-            _bidValue / currentPrice <= currentUnsoldAlgos,
-            "Not enough algos for you!"
-        );
-        require(block.timestamp - startTime < 1200, "time is up");
+        require(msg.value > 0, "bidValue less than 0");
+        require(block.timestamp - startTime < AUCTION_TIME, "time is up");
 
         // Adding or Updating the bidders currently in the contract
         if (!biddersList[msg.sender].isExist) {
-            Bidder storage newBidder = biddersList[msg.sender]; //get the object
-            //set the variables
+            Bidder storage newBidder = biddersList[msg.sender];
             newBidder.bidderID = ++totalNumBidders;
             newBidder.walletAddress = msg.sender;
-            newBidder.bidValue = _bidValue;
-            newBidder.totalAlgosPurchased = _bidValue / currentPrice; //need to check the math
+            newBidder.bidValue = msg.value;
             newBidder.isExist = true;
+            newBidder.totalAlgosPurchased = 0;
+            newBidder.refundEth = 0;
             biddersAddress.push(msg.sender);
         } else {
-            Bidder storage existingBidder = biddersList[msg.sender]; //get the object
-            existingBidder.bidValue += _bidValue;
-            existingBidder.totalAlgosPurchased += _bidValue / currentPrice; //must be careful due to loss of precision
+            Bidder storage existingBidder = biddersList[msg.sender];
+            existingBidder.bidValue += msg.value;
         }
-
-        //Updating private variables in the contract
-        currentUnsoldAlgos -= _bidValue / currentPrice;
-
-        updateAllBiders();
     }
 
     /*Internal Functions */
     //TODO: make this internal later
     function updateCurrentPrice() public {
-        //there is 60 seconds in one minute
-        // 20 minutes auction
-        // price drops by 10 wei every 2 minutes --> actual
-        // price drops by 10 wei every 0.5 minutes --> testing purposes
-        // uint256 timeElapsed = block.timestamp - startTime;
-        // uint256 remainder = timeElapsed % 30;
-        // uint256 multipleV = timeElapsed - remainder;
-        // if (multipleV * 10 < startPrice) {
-        //     currentPrice = startPrice - multipleV * 10;
-        // }
-        currentPrice = startPrice - ((block.timestamp - startTime) / 30) * 10;
-    }
+        currentPrice =
+            int256(startPrice) -
+            int256((block.timestamp - startTime) / 30) *
+            10;
 
-    //TODO: can we use IPFS to save gas and make this better?
-    function updateAllBiders() internal {
-        //obtain current price again in case time elapsed
-        updateCurrentPrice();
-        currentUnsoldAlgos = totalAlgosAvailable;
-        for (uint i = 0; i < biddersAddress.length; i++) {
-            biddersList[biddersAddress[i]].totalAlgosPurchased =
-                biddersList[biddersAddress[i]].bidValue /
-                currentPrice;
-            currentUnsoldAlgos -=
-                biddersList[biddersAddress[i]].bidValue /
-                currentPrice;
+        if (currentPrice < 0 || currentPrice < int256(reservePrice)) {
+            currentPrice = int256(reservePrice);
         }
     }
 
@@ -232,37 +186,83 @@ contract Dutch_Auction is AutomationCompatibleInterface {
     */
 
     function sendTokens() public onlyOwner {
-        updateAllBiders();
         for (uint i = 0; i < biddersAddress.length; i++) {
-            biddersList[biddersAddress[i]].totalAlgosPurchased =
-                biddersList[biddersAddress[i]].bidValue /
-                currentPrice;
-            DAToken.approve(
-                biddersAddress[i],
-                biddersList[biddersAddress[i]].totalAlgosPurchased * 10 ** 18
-            );
-            DAToken.transferFrom(
-                i_owner,
-                biddersAddress[i],
-                biddersList[biddersAddress[i]].totalAlgosPurchased * 10 ** 18
-            );
+            if (biddersList[biddersAddress[i]].totalAlgosPurchased > 0) {
+                DAToken.approve(
+                    biddersAddress[i],
+                    biddersList[biddersAddress[i]].totalAlgosPurchased *
+                        10 ** 18
+                );
+                DAToken.transferFrom(
+                    i_owner,
+                    biddersAddress[i],
+                    biddersList[biddersAddress[i]].totalAlgosPurchased *
+                        10 ** 18
+                );
+            }
+        }
+    }
+
+    function calculate() public {
+        updateCurrentPrice();
+        uint256 currentAlgos = totalAlgosAvailable;
+        for (uint i = 0; i < biddersAddress.length; i++) {
+            if (
+                currentAlgos >
+                biddersList[biddersAddress[i]].bidValue / uint256(currentPrice)
+            ) {
+                biddersList[biddersAddress[i]].totalAlgosPurchased =
+                    biddersList[biddersAddress[i]].bidValue /
+                    uint256(currentPrice);
+                currentAlgos -=
+                    biddersList[biddersAddress[i]].bidValue /
+                    uint256(currentPrice);
+                //or we ask them to pay in the end
+            } else if (
+                currentAlgos > 0 &&
+                currentAlgos <=
+                biddersList[biddersAddress[i]].bidValue / uint256(currentPrice)
+            ) {
+                biddersList[biddersAddress[i]]
+                    .totalAlgosPurchased = currentAlgos;
+                currentAlgos = 0;
+                biddersList[biddersAddress[i]].refundEth =
+                    biddersList[biddersAddress[i]].bidValue -
+                    biddersList[biddersAddress[i]].totalAlgosPurchased *
+                    uint256(currentPrice);
+                //refundETH
+                (bool callSuccess, ) = payable(
+                    biddersList[biddersAddress[i]].walletAddress
+                ).call{value: biddersList[biddersAddress[i]].refundEth}("");
+                require(callSuccess, "Failed to send ether");
+            } else if (
+                currentAlgos <= 0 &&
+                biddersList[biddersAddress[i]].totalAlgosPurchased == 0
+            ) {
+                //refund for the rest
+                biddersList[biddersAddress[i]].refundEth = biddersList[
+                    biddersAddress[i]
+                ].bidValue;
+                (bool callSuccess, ) = payable(
+                    biddersList[biddersAddress[i]].walletAddress
+                ).call{value: biddersList[biddersAddress[i]].refundEth}("");
+                require(callSuccess, "Failed to send ether");
+            }
+        }
+        if (currentAlgos < 0) {
+            currentUnsoldAlgos = currentAlgos;
         }
     }
 
     function endAuction() public onlyOwner {
+        calculate();
         sendTokens();
-        DAToken.burn(i_owner, currentUnsoldAlgos);
+        if (currentUnsoldAlgos > 0) {
+            DAToken.burn(i_owner, currentUnsoldAlgos);
+        }
     }
 
     /**View and Pure Function */
-
-    function retrievePrice() public view returns (uint256) {
-        return currentPrice;
-    }
-
-    function retrieveAlgosRemaining() public view returns (uint256) {
-        return currentUnsoldAlgos;
-    }
 
     function retrieveTotalAlgos() public view returns (uint256) {
         return totalAlgosAvailable;
@@ -270,6 +270,10 @@ contract Dutch_Auction is AutomationCompatibleInterface {
 
     function retrieveReservePrice() public view returns (uint256) {
         return reservePrice;
+    }
+
+    function retrieveCurrentPrice() public view returns (int256) {
+        return currentPrice;
     }
 
     function retrieveTotalBidder() public view returns (uint256) {
@@ -284,13 +288,13 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         return address(this).balance;
     }
 
-    function retrieveBidderAlgos(address bidder) public view returns (uint256) {
-        return biddersList[bidder].totalAlgosPurchased;
-    }
-
     function retrieveBidderBidValue(
         address bidder
     ) public view returns (uint256) {
         return biddersList[bidder].bidValue;
+    }
+
+    function retrieveBidderAlgos(address bidder) public view returns (uint256) {
+        return biddersList[bidder].totalAlgosPurchased;
     }
 }
