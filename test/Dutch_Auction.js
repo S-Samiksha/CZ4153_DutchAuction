@@ -320,6 +320,8 @@ const {
           expect(await ERC20Token.balanceOf(userOne)).to.equal(tokensToSend);
           expect(await ERC20Token.balanceOf(userTwo)).to.equal(tokensToSend1);
           expect(await ERC20Token.balanceOf(userThree)).to.equal(tokensToSend1);
+          assert.equal(response0, 40);
+          assert.equal(response1, 20);
         });
 
         it("Checking if the ERC20 Tokens are sent properly part 2", async () => {
@@ -347,6 +349,49 @@ const {
           expect(await ERC20Token.balanceOf(userOne)).to.equal(tokensToSend);
           expect(await ERC20Token.balanceOf(userTwo)).to.equal(tokensToSend1);
           expect(await ERC20Token.balanceOf(userThree)).to.equal(tokensToSend1);
+          assert.equal(response0, 100);
+          assert.equal(response1, 50);
+        });
+        it("Checking if the ERC20 Tokens are sent properly part 3", async () => {
+          await Dutch_Auction_u_1.addBidder({
+            value: ethers.parseEther("0.000000000000001"),
+          });
+          await Dutch_Auction_u_2.addBidder({
+            value: ethers.parseEther("0.000000000000001"),
+          });
+          await Dutch_Auction_u_1.addBidder({
+            value: ethers.parseEther("0.000000000000001"),
+          });
+          await Dutch_Auction_u_3.addBidder({
+            value: ethers.parseEther("0.000000000000001"),
+          });
+          const ContractBalance = await ethers.provider.getBalance(
+            Dutch_Auction_d.target
+          );
+          const userTwoBalanceBegin = await ethers.provider.getBalance(userTwo);
+          assert.equal(ContractBalance, 4000);
+          await time.increase(120);
+
+          const transactionResponse = await Dutch_Auction_d.endAuction();
+          await transactionResponse.wait();
+
+          const response0 = await Dutch_Auction_d.retrieveBidderAlgos(userOne);
+          const response1 = await Dutch_Auction_d.retrieveBidderAlgos(userTwo);
+          const tokensToSend = ethers.parseEther(response0.toString());
+          const tokensToSend1 = ethers.parseEther(response1.toString());
+          expect(await ERC20Token.balanceOf(userOne)).to.equal(tokensToSend);
+          expect(await ERC20Token.balanceOf(userTwo)).to.equal(tokensToSend1);
+          expect(await ERC20Token.balanceOf(userThree)).to.equal(tokensToSend1);
+          assert.equal(response0, 200);
+          assert.equal(response1, 0);
+          const EndContractBalance = await ethers.provider.getBalance(
+            Dutch_Auction_d.target
+          );
+          assert.equal(EndContractBalance, 2000);
+          const response2 = await Dutch_Auction_d.retrieveRefund(userTwo);
+          assert.equal(response2, 1000);
+          const userTwoBalanceEnd = await ethers.provider.getBalance(userTwo);
+          assert.equal(userTwoBalanceEnd - userTwoBalanceBegin, 1000);
         });
       });
     });

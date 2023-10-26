@@ -11,8 +11,7 @@ error Dutch_Auction__IsOwner();
 error Dutch_Auction__NotOpen();
 error Dutch_Auction__UpKeepNotNeeded(uint256 auctionState);
 
-//is AutomationCompatibleInterface
-contract Dutch_Auction {
+contract Dutch_Auction is AutomationCompatibleInterface {
     int256 private currentPrice; //in wei
     uint256 private totalNumBidders = 0;
     uint256 private immutable startPrice; //in wei
@@ -20,11 +19,15 @@ contract Dutch_Auction {
     address private immutable i_owner;
     uint256 private immutable totalAlgosAvailable;
     uint256 private immutable startTime;
-    uint256 private constant AUCTION_TIME = 120; //in seconds
+    uint256 private constant AUCTION_TIME = 1200; //in seconds
     uint256 private currentUnsoldAlgos;
+    uint256 private immutable i_interval;
 
     ERC20Token private immutable DAToken; //importing Token
     address private immutable ERC20ContractAddress;
+    address[] biddersAddress;
+
+    mapping(address => Bidder) public biddersList; //to be made private later <for debugging purposes>
 
     struct Bidder {
         uint256 bidderID;
@@ -35,10 +38,6 @@ contract Dutch_Auction {
         bool isExist;
     }
 
-    /*mappings and arrays*/
-    address[] biddersAddress;
-    mapping(address => Bidder) public biddersList; //to be made private later <for debugging purposes>
-
     // Variable to indicate auction's state --> type declaration
     enum AuctionState {
         OPEN,
@@ -46,8 +45,6 @@ contract Dutch_Auction {
     } // uint256 0: OPEN, 1: CLOSED
 
     AuctionState private s_auctionState;
-    uint256 private s_lastTimeStamp;
-    uint256 private immutable i_interval;
 
     /*Constructor*/
     constructor(
@@ -69,6 +66,7 @@ contract Dutch_Auction {
         startTime = block.timestamp; //Start time of when the contract is deployed
         DAToken = ERC20Token(_token);
         ERC20ContractAddress = _token;
+        i_interval = _interval;
     }
 
     /* modifiers */
@@ -84,54 +82,37 @@ contract Dutch_Auction {
         _; //do the rest of the function
     }
 
-    /**
-     *
-     * @dev This is the function that ChainLink Keeper nodes call
-     * They look for the `upkeepneeded` to return true
-     * The following should be true in order to return true
-     * 1. Time interval should have passed (20minutes)
-     * 2. Subscription is funded with LINK
-     * 3. Auction should be in "open" state
-     *
-     *
-     * @notice Sam Notes:
-     * Here is the variable equivalents :
-     * s_lastTimeStamp ====> startTime
-     * After the 20minutes is up, simply endAuction();
-     * It will do the burn and send the tokens as well
-     */
+    function checkUpkeep(
+        bytes memory /*checkData*/
+    )
+        public
+        override
+        returns (bool upkeepNeeded, bytes memory /* performData */)
+    {
+        bool isOpen = AuctionState.OPEN == s_auctionState;
+        // need to check (block.timestamp - last block timestamp) > interval
+        bool timePassed = (block.timestamp - startTime) > i_interval;
+        // if this is true, end auction and burn tokens
+        upkeepNeeded = (isOpen && timePassed); // if true, end auction
+    }
 
-    // function checkUpkeep(
-    //     bytes memory /*checkData*/
-    // )
-    //     public
-    //     override
-    //     returns (bool upkeepNeeded, bytes memory /* performData */)
-    // {
-    //     bool isOpen = AuctionState.OPEN == s_auctionState;
-    //     // need to check (block.timestamp - last block timestamp) > interval
-    //     bool timePassed = (block.timestamp - s_lastTimeStamp) > i_interval;
-    //     // if this is true, end auction and burn tokens
-    //     upkeepNeeded = (isOpen && timePassed); // if true, end auction
-    // }
+    function performUpkeep(bytes calldata /* performData */) external override {
+        // want some validation such that only gets called when checkupkeep is true
+        (bool upkeepNeeded, ) = checkUpkeep("");
+        // if ((block.timestamp - lastTimeStamp) > interval) {
+        //     lastTimeStamp = block.timestamp;
+        // }
+        if (!upkeepNeeded) {
+            revert Dutch_Auction__UpKeepNotNeeded(uint256(s_auctionState));
+        }
+        s_auctionState = AuctionState.CLOSING;
+        // only owner can end auction
 
-    // function performUpkeep(bytes calldata /* performData */) external override {
-    //     // want some validation such that only gets called when checkupkeep is true
-    //     (bool upkeepNeeded, ) = checkUpkeep("");
-    //     // if ((block.timestamp - lastTimeStamp) > interval) {
-    //     //     lastTimeStamp = block.timestamp;
-    //     // }
-    //     if (!upkeepNeeded) {
-    //         revert Dutch_Auction__UpKeepNotNeeded(uint256(s_auctionState));
-    //     }
-    //     s_auctionState = AuctionState.CLOSING;
-    //     // only owner can end auction
-
-    //     if (upkeepNeeded) {
-    //         // if never sell finish, burn all remaining algos
-    //         endAuction();
-    //     }
-    // }
+        if (upkeepNeeded) {
+            // if never sell finish, burn all remaining algos
+            endAuction();
+        }
+    }
 
     /***
      * -------------------------------------------------------------------------------------
@@ -176,7 +157,7 @@ contract Dutch_Auction {
             int256((block.timestamp - startTime) / 30) *
             10;
 
-        if (currentPrice < 0 || currentPrice < int256(reservePrice)) {
+        if (currentPrice <= 0 || currentPrice <= int256(reservePrice)) {
             currentPrice = int256(reservePrice);
         }
     }
@@ -296,5 +277,9 @@ contract Dutch_Auction {
 
     function retrieveBidderAlgos(address bidder) public view returns (uint256) {
         return biddersList[bidder].totalAlgosPurchased;
+    }
+
+    function retrieveRefund(address bidder) public view returns (uint256) {
+        return biddersList[bidder].refundEth;
     }
 }
