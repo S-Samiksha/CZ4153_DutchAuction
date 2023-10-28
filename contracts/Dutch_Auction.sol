@@ -302,14 +302,6 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         );
     }
 
-    fallback() external payable {
-        addBidder();
-    }
-
-    receive() external payable {
-        addBidder();
-    }
-
     /**View and Pure Function */
 
     function retrieveTotalAlgos() public view onlyOwner returns (uint256) {
@@ -352,5 +344,13 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         address bidder
     ) public view onlyOwner returns (uint256) {
         return biddersList[bidder].refundEth;
+    }
+
+    fallback() external payable {
+        addBidder();
+    }
+
+    receive() external payable {
+        addBidder();
     }
 }
