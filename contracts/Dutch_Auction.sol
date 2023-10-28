@@ -134,15 +134,26 @@ contract Dutch_Auction is AutomationCompatibleInterface {
      * -------------------------------------------------------------------------------------
      */
 
-    /**
-     * public functions
+    /** Events
      *
-     * */
+     */
     event startAuctionEvent(uint256 startTime, address ERC20Address);
     event addBidderEvent(
         uint256 bidderID,
         address walletAddress,
         uint256 bidvalue
+    );
+    event updateCurrentPriceEvent(uint256 timeElapsed, uint256 currentprice);
+    event sendTokenEvent(address bidderAddres, uint256 tokensSent);
+    event RefundEvent(
+        address bidderAddress,
+        uint256 TokensPurchased,
+        uint256 refundValue
+    );
+    event endAuctionEvent(
+        uint256 totalBidders,
+        uint256 burntERC20,
+        uint totalETHEarned
     );
 
     function startAuction(address _token) public onlyOwner AuctionClosed {
@@ -153,7 +164,10 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         emit startAuctionEvent(startTime, _token);
     }
 
-    //Reference: https://docs.soliditylang.org/en/latest/types.html#structs
+    /**
+     * public functions
+     *
+     * */
 
     function addBidder() public payable notOwner AuctionOpen {
         //checking all the requirements
@@ -181,8 +195,6 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         }
     }
 
-    /*Internal Functions */
-    //TODO: make this internal later
     function updateCurrentPrice() public onlyOwner {
         currentPrice =
             int256(startPrice) -
@@ -192,11 +204,11 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         if (currentPrice <= 0 || currentPrice <= int256(reservePrice)) {
             currentPrice = int256(reservePrice);
         }
+        emit updateCurrentPriceEvent(
+            (block.timestamp - startTime),
+            uint256(currentPrice)
+        );
     }
-
-    /*
-    triggered when either algos runs out or time runs out 
-    */
 
     function sendTokens() public onlyOwner AuctionClosed {
         for (uint i = 0; i < biddersAddress.length; i++) {
@@ -211,6 +223,10 @@ contract Dutch_Auction is AutomationCompatibleInterface {
                     biddersAddress[i],
                     biddersList[biddersAddress[i]].totalAlgosPurchased *
                         10 ** 18
+                );
+                emit sendTokenEvent(
+                    biddersAddress[i],
+                    biddersList[biddersAddress[i]].totalAlgosPurchased
                 );
             }
         }
@@ -230,7 +246,6 @@ contract Dutch_Auction is AutomationCompatibleInterface {
                 currentAlgos -=
                     biddersList[biddersAddress[i]].bidValue /
                     uint256(currentPrice);
-                //or we ask them to pay in the end
             } else if (
                 currentAlgos > 0 &&
                 currentAlgos <=
@@ -261,7 +276,13 @@ contract Dutch_Auction is AutomationCompatibleInterface {
                 ).call{value: biddersList[biddersAddress[i]].refundEth}("");
                 require(callSuccess, "Failed to send ether");
             }
+            emit RefundEvent(
+                biddersAddress[i],
+                biddersList[biddersAddress[i]].totalAlgosPurchased,
+                biddersList[biddersAddress[i]].refundEth
+            );
         }
+
         if (currentAlgos > 0) {
             currentUnsoldAlgos = currentAlgos;
         }
@@ -274,6 +295,11 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         if (currentUnsoldAlgos > 0) {
             DAToken.burn(i_owner, currentUnsoldAlgos);
         }
+        emit endAuctionEvent(
+            totalNumBidders,
+            currentUnsoldAlgos,
+            address(this).balance
+        );
     }
 
     fallback() external payable {
