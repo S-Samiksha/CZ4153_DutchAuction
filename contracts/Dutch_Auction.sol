@@ -9,6 +9,7 @@ import "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.s
 error Dutch_Auction__NotOwner();
 error Dutch_Auction__IsOwner();
 error Dutch_Auction__NotOpen();
+error Dutch_Auction__Open();
 error Dutch_Auction__UpKeepNotNeeded(uint256 auctionState);
 
 contract Dutch_Auction is AutomationCompatibleInterface {
@@ -18,7 +19,7 @@ contract Dutch_Auction is AutomationCompatibleInterface {
     uint256 private immutable reservePrice;
     address private immutable i_owner;
     uint256 private immutable totalAlgosAvailable;
-    uint256 private immutable startTime;
+    uint256 private startTime;
     uint256 private constant AUCTION_TIME = 1200; //in seconds
     uint256 private currentUnsoldAlgos;
     uint256 private immutable i_interval;
@@ -63,10 +64,10 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         totalAlgosAvailable = _totalAlgosAvailable;
         currentPrice = int256(_startPrice);
         startPrice = _startPrice;
-        startTime = block.timestamp; //Start time of when the contract is deployed
         DAToken = ERC20Token(_token);
         ERC20ContractAddress = _token;
         i_interval = _interval;
+        s_auctionState = AuctionState.CLOSING;
     }
 
     /* modifiers */
@@ -79,6 +80,19 @@ contract Dutch_Auction is AutomationCompatibleInterface {
     modifier notOwner() {
         // require(msg.sender == owner);
         if (msg.sender == i_owner) revert Dutch_Auction__IsOwner();
+        _; //do the rest of the function
+    }
+
+    modifier AuctionOpen() {
+        // require(msg.sender == owner);
+        if (AuctionState.CLOSING == s_auctionState)
+            revert Dutch_Auction__NotOpen();
+        _; //do the rest of the function
+    }
+
+    modifier AuctionClosed() {
+        // require(msg.sender == owner);
+        if (AuctionState.OPEN == s_auctionState) revert Dutch_Auction__Open();
         _; //do the rest of the function
     }
 
@@ -127,8 +141,13 @@ contract Dutch_Auction is AutomationCompatibleInterface {
      *
      * */
 
+    function startAuction() public onlyOwner AuctionClosed {
+        s_auctionState = AuctionState.OPEN;
+        startTime = block.timestamp; //Start time of when the contract is deployed
+    }
+
     //Reference: https://docs.soliditylang.org/en/latest/types.html#structs
-    function addBidder() public payable notOwner {
+    function addBidder() public payable notOwner AuctionOpen {
         //checking all the requirements
         require(msg.value > 0, "bidValue less than 0");
         require(block.timestamp - startTime < AUCTION_TIME, "time is up");
@@ -151,7 +170,7 @@ contract Dutch_Auction is AutomationCompatibleInterface {
 
     /*Internal Functions */
     //TODO: make this internal later
-    function updateCurrentPrice() public {
+    function updateCurrentPrice() public onlyOwner {
         currentPrice =
             int256(startPrice) -
             int256((block.timestamp - startTime) / 30) *
@@ -166,7 +185,7 @@ contract Dutch_Auction is AutomationCompatibleInterface {
     triggered when either algos runs out or time runs out 
     */
 
-    function sendTokens() public onlyOwner {
+    function sendTokens() public onlyOwner AuctionClosed {
         for (uint i = 0; i < biddersAddress.length; i++) {
             if (biddersList[biddersAddress[i]].totalAlgosPurchased > 0) {
                 DAToken.approve(
@@ -184,7 +203,7 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         }
     }
 
-    function calculate() public {
+    function calculate() public onlyOwner AuctionClosed {
         updateCurrentPrice();
         uint256 currentAlgos = totalAlgosAvailable;
         for (uint i = 0; i < biddersAddress.length; i++) {
@@ -230,38 +249,46 @@ contract Dutch_Auction is AutomationCompatibleInterface {
                 require(callSuccess, "Failed to send ether");
             }
         }
-        if (currentAlgos < 0) {
+        if (currentAlgos > 0) {
             currentUnsoldAlgos = currentAlgos;
         }
     }
 
-    function endAuction() public onlyOwner {
+    function endAuction() public onlyOwner AuctionClosed {
         calculate();
         sendTokens();
         if (currentUnsoldAlgos > 0) {
-            DAToken.burn(i_owner, currentUnsoldAlgos);
+            DAToken.burn(i_owner, currentUnsoldAlgos * 10 ** 18);
         }
+    }
+
+    fallback() external payable {
+        addBidder();
+    }
+
+    receive() external payable {
+        addBidder();
     }
 
     /**View and Pure Function */
 
-    function retrieveTotalAlgos() public view returns (uint256) {
+    function retrieveTotalAlgos() public view onlyOwner returns (uint256) {
         return totalAlgosAvailable;
     }
 
-    function retrieveReservePrice() public view returns (uint256) {
+    function retrieveReservePrice() public view onlyOwner returns (uint256) {
         return reservePrice;
     }
 
-    function retrieveCurrentPrice() public view returns (int256) {
+    function retrieveCurrentPrice() public view onlyOwner returns (int256) {
         return currentPrice;
     }
 
-    function retrieveTotalBidder() public view returns (uint256) {
+    function retrieveTotalBidder() public view onlyOwner returns (uint256) {
         return totalNumBidders;
     }
 
-    function retrieveContractOwner() public view returns (address) {
+    function retrieveContractOwner() public view onlyOwner returns (address) {
         return i_owner;
     }
 
@@ -271,15 +298,19 @@ contract Dutch_Auction is AutomationCompatibleInterface {
 
     function retrieveBidderBidValue(
         address bidder
-    ) public view returns (uint256) {
+    ) public view onlyOwner returns (uint256) {
         return biddersList[bidder].bidValue;
     }
 
-    function retrieveBidderAlgos(address bidder) public view returns (uint256) {
+    function retrieveBidderAlgos(
+        address bidder
+    ) public view onlyOwner returns (uint256) {
         return biddersList[bidder].totalAlgosPurchased;
     }
 
-    function retrieveRefund(address bidder) public view returns (uint256) {
+    function retrieveRefund(
+        address bidder
+    ) public view onlyOwner returns (uint256) {
         return biddersList[bidder].refundEth;
     }
 }
