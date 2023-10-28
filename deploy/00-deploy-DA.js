@@ -19,7 +19,6 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy, log } = deployments;
 
   const { deployer } = await getNamedAccounts();
-  const ERC20Token = await ethers.getContract("ERC20Token", deployer);
   const chainId = network.config.chainId;
   log("----------------------------------------------------");
   log("Deploying Dutch_Auction and waiting for confirmations...");
@@ -27,13 +26,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const Dutch_Auction = await deploy("Dutch_Auction", {
     from: deployer,
     //Arguments: reservePrice, currentPrice, NumberofAlgos
-    args: [
-      RESERVE_PRICE,
-      START_PRICE,
-      INITIAL_SUPPLY_INT,
-      ERC20Token.target,
-      INTERVAL,
-    ],
+    args: [RESERVE_PRICE, START_PRICE, INITIAL_SUPPLY_INT, INTERVAL],
     log: true,
     // we need to wait if on a live network so we can verify properly
     waitConfirmations: network.config.blockConfirmations || 1,
@@ -49,7 +42,6 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
       RESERVE_PRICE,
       START_PRICE,
       INITIAL_SUPPLY_INT,
-      ERC20Token.target,
       INTERVAL,
     ]);
   }

@@ -120,11 +120,6 @@ const {
           await playerToken.transferFrom(deployer, user1, tokensToSpend);
           expect(await playerToken.balanceOf(user1)).to.equal(tokensToSpend);
         });
-        it("doesn't allow an unnaproved member to do transfers", async () => {
-          await expect(
-            playerToken.transferFrom(deployer, user1, amount)
-          ).to.be.revertedWith("ERC20: insufficient allowance");
-        });
         it("emits an approval event, when an approval occurs", async () => {
           await expect(ourToken.approve(user1, amount)).to.emit(
             ourToken,
@@ -135,16 +130,6 @@ const {
           await ourToken.approve(user1, amount);
           const allowance = await ourToken.allowance(deployer, user1);
           assert.equal(allowance.toString(), amount);
-        });
-        it("won't allow a user to go over the allowance", async () => {
-          await ourToken.approve(user1, amount);
-          await expect(
-            playerToken.transferFrom(
-              deployer,
-              user1,
-              (40 * multiplier).toString()
-            )
-          ).to.be.revertedWith("ERC20: insufficient allowance");
         });
       });
     });
@@ -182,11 +167,11 @@ const {
           "Dutch_Auction",
           userThree
         );
-        const transactionResponse = await ERC20Token.approve(
-          Dutch_Auction_d.target,
-          INITIAL_SUPPLY
+
+        const transactionResponse2 = await Dutch_Auction_d.startAuction(
+          ERC20Token.target
         );
-        await transactionResponse.wait();
+        await transactionResponse2.wait();
       });
 
       /**

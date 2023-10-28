@@ -24,8 +24,8 @@ contract Dutch_Auction is AutomationCompatibleInterface {
     uint256 private currentUnsoldAlgos;
     uint256 private immutable i_interval;
 
-    ERC20Token private immutable DAToken; //importing Token
-    address private immutable ERC20ContractAddress;
+    ERC20Token private DAToken; //importing Token
+    address private ERC20ContractAddress;
     address[] biddersAddress;
 
     mapping(address => Bidder) public biddersList; //to be made private later <for debugging purposes>
@@ -52,7 +52,6 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         uint256 _reservePrice,
         uint256 _startPrice,
         uint256 _totalAlgosAvailable,
-        address _token,
         uint256 _interval
     ) {
         require(
@@ -64,8 +63,7 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         totalAlgosAvailable = _totalAlgosAvailable;
         currentPrice = int256(_startPrice);
         startPrice = _startPrice;
-        DAToken = ERC20Token(_token);
-        ERC20ContractAddress = _token;
+
         i_interval = _interval;
         s_auctionState = AuctionState.CLOSING;
     }
@@ -140,13 +138,23 @@ contract Dutch_Auction is AutomationCompatibleInterface {
      * public functions
      *
      * */
+    event startAuctionEvent(uint256 startTime, address ERC20Address);
+    event addBidderEvent(
+        uint256 bidderID,
+        address walletAddress,
+        uint256 bidvalue
+    );
 
-    function startAuction() public onlyOwner AuctionClosed {
+    function startAuction(address _token) public onlyOwner AuctionClosed {
         s_auctionState = AuctionState.OPEN;
         startTime = block.timestamp; //Start time of when the contract is deployed
+        DAToken = ERC20Token(_token);
+        ERC20ContractAddress = _token;
+        emit startAuctionEvent(startTime, _token);
     }
 
     //Reference: https://docs.soliditylang.org/en/latest/types.html#structs
+
     function addBidder() public payable notOwner AuctionOpen {
         //checking all the requirements
         require(msg.value > 0, "bidValue less than 0");
@@ -162,6 +170,11 @@ contract Dutch_Auction is AutomationCompatibleInterface {
             newBidder.totalAlgosPurchased = 0;
             newBidder.refundEth = 0;
             biddersAddress.push(msg.sender);
+            emit addBidderEvent(
+                newBidder.bidderID,
+                newBidder.walletAddress,
+                newBidder.bidValue
+            );
         } else {
             Bidder storage existingBidder = biddersList[msg.sender];
             existingBidder.bidValue += msg.value;
@@ -254,11 +267,12 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         }
     }
 
-    function endAuction() public onlyOwner AuctionClosed {
+    function endAuction() public onlyOwner {
+        s_auctionState = AuctionState.CLOSING;
         calculate();
         sendTokens();
         if (currentUnsoldAlgos > 0) {
-            DAToken.burn(i_owner, currentUnsoldAlgos * 10 ** 18);
+            DAToken.burn(i_owner, currentUnsoldAlgos);
         }
     }
 

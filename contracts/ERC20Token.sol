@@ -7,12 +7,14 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract ERC20Token is Context, ERC20, Ownable {
     constructor(
-        uint256 initialSupply
+        uint256 initialSupply,
+        address contractAddress
     ) Ownable(msg.sender) ERC20("ERC20Token", "ET") {
         _mint(msg.sender, initialSupply * (10 ** 18));
+        approve(contractAddress, initialSupply * (10 ** 18));
     }
 
-    function burn(address owner, uint256 amount) public onlyOwner {
+    function burn(address owner, uint256 amount) public {
         _burn(owner, amount * 10 ** 18);
     }
 }
