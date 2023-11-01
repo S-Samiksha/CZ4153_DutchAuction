@@ -220,7 +220,10 @@ const {
           assert.equal(response1, 20);
         });
 
-        it("Checking if the ERC20 Tokens are sent properly part 2", async () => {
+        it("Checking if the ERC20 Tokens are sent properly (increment in time testing, reservation price is not hit, but all tokens sold out)", async () => {
+          // 120 seconds = 2min
+          // 50 - 2 * 15 = 20
+          // 4000/20 = 200
           await Dutch_Auction_u_1.addBidder({
             value: ethers.parseEther("0.000000000000001"),
           });
@@ -259,7 +262,7 @@ const {
           assert.equal(response1, 50);
         });
 
-        it("Checking if the ERC20 Tokens are sent properly part 3", async () => {
+        it("Checking if the ERC20 Tokens are sent properly (if the tokens run out before 20min and reservation price is hit)", async () => {
           await Dutch_Auction_u_1.addBidder({
             value: ethers.parseEther("0.000000000000001"),
           });
@@ -272,14 +275,27 @@ const {
 
           const userTwoBalanceBegin = await ethers.provider.getBalance(userTwo);
           await time.increase(180);
+          //180seconds = 3min
+          //180/60*15 = 3*15 = 45
+          //50-45 = 5
+          // but reserve price is 10
+          // at price = 50 --> 2000/50 = 40 and at 1000/50 = 20
 
-          await Dutch_Auction_u_3.addBidder({
-            value: ethers.parseEther("0.000000000000001"),
-          });
+          await expect(
+            Dutch_Auction_u_3.addBidder({
+              value: ethers.parseEther("0.000000000000001"),
+            })
+          ).to.be.revertedWith("There is no more algos left");
+
           const ContractBalance = await ethers.provider.getBalance(
             Dutch_Auction_d.target
           );
-          assert.equal(ContractBalance, 4000);
+          assert.equal(ContractBalance, 3000);
+
+          await Dutch_Auction_d.updateCurrentPrice();
+          const updateCurrentPrice =
+            await Dutch_Auction_d.retrieveCurrentPrice();
+          assert.equal(updateCurrentPrice, 10);
 
           const transactionResponse = await Dutch_Auction_d.endAuction();
           await transactionResponse.wait();

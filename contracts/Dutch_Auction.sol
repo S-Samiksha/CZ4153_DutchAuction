@@ -153,9 +153,10 @@ contract Dutch_Auction {
 
     function addBidder() public payable notOwner AuctionOpen {
         //checking all the requirements
-        calculate();
         require(msg.value > 0, "bidValue less than 0");
+        calculate();
         require(block.timestamp - startTime < AUCTION_TIME, "time is up");
+        require(currentUnsoldAlgos > 0, "There is no more algos left");
 
         // Adding or Updating the bidders currently in the contract
         if (!biddersList[msg.sender].isExist) {
@@ -236,6 +237,7 @@ contract Dutch_Auction {
         updateCurrentPrice();
         uint256 currentAlgos = totalAlgosAvailable;
         for (uint i = 0; i < biddersAddress.length; i++) {
+            //if there is sufficient algos for this current bidder
             if (
                 currentAlgos >=
                 biddersList[biddersAddress[i]].bidValue / uint256(currentPrice)
@@ -247,7 +249,10 @@ contract Dutch_Auction {
                     biddersList[biddersAddress[i]].bidValue /
                     uint256(currentPrice);
                 biddersList[biddersAddress[i]].refundEth = 0;
-            } else if (
+            }
+            //Else if there is algos left but it is less than the amount the bidder bidded
+            // he gets all the remaining algos and is refunded the ETH.
+            else if (
                 currentAlgos > 0 &&
                 currentAlgos <
                 biddersList[biddersAddress[i]].bidValue / uint256(currentPrice)
@@ -259,10 +264,10 @@ contract Dutch_Auction {
                     biddersList[biddersAddress[i]].bidValue -
                     biddersList[biddersAddress[i]].totalAlgosPurchased *
                     uint256(currentPrice);
-            } else if (
-                currentAlgos <= 0 &&
-                biddersList[biddersAddress[i]].totalAlgosPurchased == 0
-            ) {
+            }
+            //there is no algos left
+            // reset the total algos purchased to 0
+            else if (currentAlgos <= 0) {
                 //refund for the rest
                 biddersList[biddersAddress[i]].totalAlgosPurchased = 0;
                 biddersList[biddersAddress[i]].refundEth = biddersList[
