@@ -4,25 +4,23 @@ pragma solidity ^0.8.21;
 
 // Using our own ERC20Token
 import "./ERC20Token.sol";
-import "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
 
 error Dutch_Auction__NotOwner();
 error Dutch_Auction__IsOwner();
 error Dutch_Auction__NotOpen();
 error Dutch_Auction__Open();
-error Dutch_Auction__UpKeepNotNeeded(uint256 auctionState);
 
-contract Dutch_Auction is AutomationCompatibleInterface {
+contract Dutch_Auction {
     int256 private currentPrice; //in wei
     uint256 private totalNumBidders = 0;
     uint256 private immutable startPrice; //in wei
     uint256 private immutable reservePrice;
     address private immutable i_owner;
-    uint256 private immutable totalAlgosAvailable;
+    uint256 private totalAlgosAvailable;
     uint256 private startTime;
     uint256 private constant AUCTION_TIME = 1200; //in seconds
     uint256 private currentUnsoldAlgos;
-    uint256 private immutable i_interval;
+    uint256 private changePerMin;
 
     ERC20Token private DAToken; //importing Token
     address private ERC20ContractAddress;
@@ -48,23 +46,16 @@ contract Dutch_Auction is AutomationCompatibleInterface {
     AuctionState private s_auctionState;
 
     /*Constructor*/
-    constructor(
-        uint256 _reservePrice,
-        uint256 _startPrice,
-        uint256 _totalAlgosAvailable,
-        uint256 _interval
-    ) {
+    constructor(uint256 _reservePrice, uint256 _startPrice) {
         require(
             _reservePrice < _startPrice,
             "reserve price is higher than current price"
         );
         i_owner = msg.sender;
         reservePrice = _reservePrice;
-        totalAlgosAvailable = _totalAlgosAvailable;
         currentPrice = int256(_startPrice);
         startPrice = _startPrice;
 
-        i_interval = _interval;
         s_auctionState = AuctionState.CLOSING;
     }
 
@@ -94,38 +85,6 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         _; //do the rest of the function
     }
 
-    function checkUpkeep(
-        bytes memory /*checkData*/
-    )
-        public
-        override
-        returns (bool upkeepNeeded, bytes memory /* performData */)
-    {
-        bool isOpen = AuctionState.OPEN == s_auctionState;
-        // need to check (block.timestamp - last block timestamp) > interval
-        bool timePassed = (block.timestamp - startTime) > i_interval;
-        // if this is true, end auction and burn tokens
-        upkeepNeeded = (isOpen && timePassed); // if true, end auction
-    }
-
-    function performUpkeep(bytes calldata /* performData */) external override {
-        // want some validation such that only gets called when checkupkeep is true
-        (bool upkeepNeeded, ) = checkUpkeep("");
-        // if ((block.timestamp - lastTimeStamp) > interval) {
-        //     lastTimeStamp = block.timestamp;
-        // }
-        if (!upkeepNeeded) {
-            revert Dutch_Auction__UpKeepNotNeeded(uint256(s_auctionState));
-        }
-        s_auctionState = AuctionState.CLOSING;
-        // only owner can end auction
-
-        if (upkeepNeeded) {
-            // if never sell finish, burn all remaining algos
-            endAuction();
-        }
-    }
-
     /***
      * -------------------------------------------------------------------------------------
      * -------------------------------------------------------------------------------------
@@ -137,31 +96,54 @@ contract Dutch_Auction is AutomationCompatibleInterface {
     /** Events
      *
      */
-    event startAuctionEvent(uint256 startTime, address ERC20Address);
+    event startAuctionEvent(
+        uint256 startTime,
+        address ERC20Address,
+        uint256 totalAlgosAvailable,
+        uint256 changePerMin
+    );
     event addBidderEvent(
         uint256 bidderID,
         address walletAddress,
         uint256 bidvalue
     );
     event updateCurrentPriceEvent(uint256 timeElapsed, uint256 currentprice);
-    event sendTokenEvent(address bidderAddres, uint256 tokensSent);
+    event sendTokenEvent(address bidderAddress, uint256 tokensSent);
+    event calculateEvent(
+        address bidderAddress,
+        uint256 TokensPurchased,
+        uint256 refundValue
+    );
+
     event RefundEvent(
         address bidderAddress,
         uint256 TokensPurchased,
         uint256 refundValue
     );
+
     event endAuctionEvent(
         uint256 totalBidders,
         uint256 burntERC20,
         uint totalETHEarned
     );
 
-    function startAuction(address _token) public onlyOwner AuctionClosed {
+    function startAuction(
+        uint256 _totalAlgosAvailable,
+        uint256 _changePerMin
+    ) public onlyOwner AuctionClosed returns (address) {
         s_auctionState = AuctionState.OPEN;
+        totalAlgosAvailable = _totalAlgosAvailable;
+        changePerMin = _changePerMin;
         startTime = block.timestamp; //Start time of when the contract is deployed
-        DAToken = ERC20Token(_token);
-        ERC20ContractAddress = _token;
-        emit startAuctionEvent(startTime, _token);
+        DAToken = new ERC20Token(totalAlgosAvailable, address(this));
+        ERC20ContractAddress = address(DAToken);
+        emit startAuctionEvent(
+            startTime,
+            ERC20ContractAddress,
+            totalAlgosAvailable,
+            changePerMin
+        );
+        return ERC20ContractAddress;
     }
 
     /**
@@ -171,6 +153,7 @@ contract Dutch_Auction is AutomationCompatibleInterface {
 
     function addBidder() public payable notOwner AuctionOpen {
         //checking all the requirements
+        calculate();
         require(msg.value > 0, "bidValue less than 0");
         require(block.timestamp - startTime < AUCTION_TIME, "time is up");
 
@@ -195,11 +178,11 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         }
     }
 
-    function updateCurrentPrice() public onlyOwner {
+    function updateCurrentPrice() public {
         currentPrice =
             int256(startPrice) -
-            int256((block.timestamp - startTime) / 30) *
-            10;
+            int256((block.timestamp - startTime) / 60) *
+            int256(changePerMin);
 
         if (currentPrice <= 0 || currentPrice <= int256(reservePrice)) {
             currentPrice = int256(reservePrice);
@@ -219,7 +202,7 @@ contract Dutch_Auction is AutomationCompatibleInterface {
                         10 ** 18
                 );
                 DAToken.transferFrom(
-                    i_owner,
+                    address(this),
                     biddersAddress[i],
                     biddersList[biddersAddress[i]].totalAlgosPurchased *
                         10 ** 18
@@ -232,12 +215,29 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         }
     }
 
-    function calculate() public onlyOwner AuctionClosed {
+    function refundETH() public onlyOwner AuctionClosed {
+        for (uint i = 0; i < biddersAddress.length; i++) {
+            if (biddersList[biddersAddress[i]].refundEth > 0) {
+                //refundETH
+                (bool callSuccess, ) = payable(
+                    biddersList[biddersAddress[i]].walletAddress
+                ).call{value: biddersList[biddersAddress[i]].refundEth}("");
+                require(callSuccess, "Failed to send ether");
+                emit RefundEvent(
+                    biddersAddress[i],
+                    biddersList[biddersAddress[i]].totalAlgosPurchased,
+                    biddersList[biddersAddress[i]].refundEth
+                );
+            }
+        }
+    }
+
+    function calculate() public {
         updateCurrentPrice();
         uint256 currentAlgos = totalAlgosAvailable;
         for (uint i = 0; i < biddersAddress.length; i++) {
             if (
-                currentAlgos >
+                currentAlgos >=
                 biddersList[biddersAddress[i]].bidValue / uint256(currentPrice)
             ) {
                 biddersList[biddersAddress[i]].totalAlgosPurchased =
@@ -246,9 +246,10 @@ contract Dutch_Auction is AutomationCompatibleInterface {
                 currentAlgos -=
                     biddersList[biddersAddress[i]].bidValue /
                     uint256(currentPrice);
+                biddersList[biddersAddress[i]].refundEth = 0;
             } else if (
                 currentAlgos > 0 &&
-                currentAlgos <=
+                currentAlgos <
                 biddersList[biddersAddress[i]].bidValue / uint256(currentPrice)
             ) {
                 biddersList[biddersAddress[i]]
@@ -258,23 +259,15 @@ contract Dutch_Auction is AutomationCompatibleInterface {
                     biddersList[biddersAddress[i]].bidValue -
                     biddersList[biddersAddress[i]].totalAlgosPurchased *
                     uint256(currentPrice);
-                //refundETH
-                (bool callSuccess, ) = payable(
-                    biddersList[biddersAddress[i]].walletAddress
-                ).call{value: biddersList[biddersAddress[i]].refundEth}("");
-                require(callSuccess, "Failed to send ether");
             } else if (
                 currentAlgos <= 0 &&
                 biddersList[biddersAddress[i]].totalAlgosPurchased == 0
             ) {
                 //refund for the rest
+                biddersList[biddersAddress[i]].totalAlgosPurchased = 0;
                 biddersList[biddersAddress[i]].refundEth = biddersList[
                     biddersAddress[i]
                 ].bidValue;
-                (bool callSuccess, ) = payable(
-                    biddersList[biddersAddress[i]].walletAddress
-                ).call{value: biddersList[biddersAddress[i]].refundEth}("");
-                require(callSuccess, "Failed to send ether");
             }
             emit RefundEvent(
                 biddersAddress[i],
@@ -285,6 +278,9 @@ contract Dutch_Auction is AutomationCompatibleInterface {
 
         if (currentAlgos > 0) {
             currentUnsoldAlgos = currentAlgos;
+        } else {
+            s_auctionState = AuctionState.CLOSING;
+            currentUnsoldAlgos = 0;
         }
     }
 
@@ -292,8 +288,9 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         s_auctionState = AuctionState.CLOSING;
         calculate();
         sendTokens();
+        refundETH();
         if (currentUnsoldAlgos > 0) {
-            DAToken.burn(i_owner, currentUnsoldAlgos);
+            DAToken.burn(address(this), currentUnsoldAlgos);
         }
         emit endAuctionEvent(
             totalNumBidders,
@@ -346,11 +343,19 @@ contract Dutch_Auction is AutomationCompatibleInterface {
         return biddersList[bidder].refundEth;
     }
 
+    function balanceOfBidder(address bidder) public view returns (uint256) {
+        return DAToken.balanceOf(bidder);
+    }
+
     fallback() external payable {
         addBidder();
     }
 
     receive() external payable {
         addBidder();
+    }
+
+    function getAuctionState() public view returns (AuctionState) {
+        return s_auctionState;
     }
 }

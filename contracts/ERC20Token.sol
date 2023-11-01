@@ -14,7 +14,7 @@ contract ERC20Token is Context, ERC20, Ownable {
         approve(contractAddress, initialSupply * (10 ** 18));
     }
 
-    function burn(address i_owner, uint256 amount) public {
+    function burn(address i_owner, uint256 amount) public onlyOwner {
         _burn(i_owner, amount * 10 ** 18);
     }
 }

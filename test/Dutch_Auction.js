@@ -10,6 +10,7 @@ const {
   INITIAL_SUPPLY_INT,
   RESERVE_PRICE,
   START_PRICE,
+  CHANGEPERMIN,
 } = require("../helper-hardhat-config");
 const {
   time,
@@ -35,104 +36,7 @@ const {
 /**
  * Skips the testing if it is on a testnet, only tests on localhost
  * */
-!developmentChains.includes(network.name)
-  ? describe.skip
-  : /**
-     * Testing the ERC20 token build
-     * Reference: https://github.com/PatrickAlphaC/hardhat-erc20-fcc/blob/main/test/unit/ourToken-unit.test.js
-     * TODO: change the variables accordingly
-     */
 
-    describe("OurToken Unit Test", function () {
-      //you need to change it to 18 decimal places because of the ERC20 Token standard
-      const multiplier = 10 ** 18;
-      let ourToken, deployer, user1; //there is a token, a deployer and a user
-
-      /**
-       * Deploy the token before each of the test cases
-       */
-      beforeEach(async function () {
-        const accounts = await getNamedAccounts();
-        deployer = accounts.deployer;
-        user1 = accounts.userOne;
-
-        await deployments.fixture("all");
-        ourToken = await ethers.getContract("ERC20Token", deployer);
-      });
-
-      /**
-       * Testing whether the contract was deployed in the first place
-       */
-      it("was deployed", async () => {
-        assert(ourToken.target);
-      });
-
-      /**
-       * Constructor should be able to set the parameters correctly
-       * This includes the initial supply, correct name and the correct symbol
-       */
-      describe("constructor", () => {
-        it("Correct INITIAL_SUPPLY of ERC20 Token has been set", async () => {
-          const totalSupply = await ourToken.totalSupply();
-          assert.equal(totalSupply.toString(), INITIAL_SUPPLY);
-        });
-        it("initializes the token with the correct name and symbol ", async () => {
-          const name = (await ourToken.name()).toString();
-          assert.equal(name, "ERC20Token");
-
-          const symbol = (await ourToken.symbol()).toString();
-          assert.equal(symbol, "ET");
-        });
-      });
-
-      /**
-       * The ERC20 standard should be able to transfer the ERC20 token (10 tokens) to user1
-       * Then we check he balance of user one and check whether all has been sent
-       *
-       * There is also a transfer event that must be emitted
-       */
-      describe("transfers", () => {
-        it("Should be able to transfer tokens successfully to an address", async () => {
-          const tokensToSend = ethers.parseEther("10");
-          await ourToken.transfer(user1, tokensToSend);
-          expect(await ourToken.balanceOf(user1)).to.equal(tokensToSend);
-        });
-
-        it("emits an transfer event, when an transfer occurs", async () => {
-          await expect(
-            ourToken.transfer(user1, (10 * multiplier).toString())
-          ).to.emit(ourToken, "Transfer");
-        });
-      });
-
-      /**
-       *
-       */
-      describe("allowances", () => {
-        const amount = (20 * multiplier).toString();
-        beforeEach(async () => {
-          playerToken = await ethers.getContract("ERC20Token", user1);
-        });
-        it("Should approve other address to spend token", async () => {
-          const tokensToSpend = ethers.parseEther("5");
-          //Deployer is approving that user1 can spend 5 of their precious OT's
-          await ourToken.approve(user1, tokensToSpend);
-          await playerToken.transferFrom(deployer, user1, tokensToSpend);
-          expect(await playerToken.balanceOf(user1)).to.equal(tokensToSpend);
-        });
-        it("emits an approval event, when an approval occurs", async () => {
-          await expect(ourToken.approve(user1, amount)).to.emit(
-            ourToken,
-            "Approval"
-          );
-        });
-        it("the allowance being set is accurate", async () => {
-          await ourToken.approve(user1, amount);
-          const allowance = await ourToken.allowance(deployer, user1);
-          assert.equal(allowance.toString(), amount);
-        });
-      });
-    });
 /**
  * First Decribe function wraps the entire testing
  * @notice creates 4 accounts to be used: one deployer, and three users
@@ -147,6 +51,7 @@ const {
       let Dutch_Auction_u_1;
       let Dutch_Auction_u_2;
       let Dutch_Auction_u_3;
+      let ERC20Token;
       let deployer;
       let userOne;
       let userTwo;
@@ -159,7 +64,6 @@ const {
         userTwo = (await getNamedAccounts()).userTwo;
         userThree = (await getNamedAccounts()).userThree;
         await deployments.fixture("all");
-        ERC20Token = await ethers.getContract("ERC20Token", deployer);
         Dutch_Auction_d = await ethers.getContract("Dutch_Auction", deployer);
         Dutch_Auction_u_1 = await ethers.getContract("Dutch_Auction", userOne);
         Dutch_Auction_u_2 = await ethers.getContract("Dutch_Auction", userTwo);
@@ -168,10 +72,11 @@ const {
           userThree
         );
 
-        const transactionResponse2 = await Dutch_Auction_d.startAuction(
-          ERC20Token.target
+        const transactionResponse0 = await Dutch_Auction_d.startAuction(
+          INITIAL_SUPPLY_INT,
+          CHANGEPERMIN
         );
-        await transactionResponse2.wait();
+        await transactionResponse0.wait();
       });
 
       /**
@@ -302,9 +207,15 @@ const {
           const response1 = await Dutch_Auction_d.retrieveBidderAlgos(userTwo);
           const tokensToSend = ethers.parseEther(response0.toString());
           const tokensToSend1 = ethers.parseEther(response1.toString());
-          expect(await ERC20Token.balanceOf(userOne)).to.equal(tokensToSend);
-          expect(await ERC20Token.balanceOf(userTwo)).to.equal(tokensToSend1);
-          expect(await ERC20Token.balanceOf(userThree)).to.equal(tokensToSend1);
+          expect(await Dutch_Auction_d.balanceOfBidder(userOne)).to.equal(
+            tokensToSend
+          );
+          expect(await Dutch_Auction_d.balanceOfBidder(userTwo)).to.equal(
+            tokensToSend1
+          );
+          expect(await Dutch_Auction_d.balanceOfBidder(userThree)).to.equal(
+            tokensToSend1
+          );
           assert.equal(response0, 40);
           assert.equal(response1, 20);
         });
@@ -322,7 +233,10 @@ const {
           await Dutch_Auction_u_3.addBidder({
             value: ethers.parseEther("0.000000000000001"),
           });
-          await time.increase(90);
+          await time.increase(120);
+          await Dutch_Auction_d.updateCurrentPrice();
+          const response = await Dutch_Auction_d.retrieveCurrentPrice();
+          assert.equal(response, 20);
 
           const transactionResponse = await Dutch_Auction_d.endAuction();
           await transactionResponse.wait();
@@ -331,12 +245,20 @@ const {
           const response1 = await Dutch_Auction_d.retrieveBidderAlgos(userTwo);
           const tokensToSend = ethers.parseEther(response0.toString());
           const tokensToSend1 = ethers.parseEther(response1.toString());
-          expect(await ERC20Token.balanceOf(userOne)).to.equal(tokensToSend);
-          expect(await ERC20Token.balanceOf(userTwo)).to.equal(tokensToSend1);
-          expect(await ERC20Token.balanceOf(userThree)).to.equal(tokensToSend1);
+
+          expect(await Dutch_Auction_d.balanceOfBidder(userOne)).to.equal(
+            tokensToSend
+          );
+          expect(await Dutch_Auction_d.balanceOfBidder(userTwo)).to.equal(
+            tokensToSend1
+          );
+          expect(await Dutch_Auction_d.balanceOfBidder(userThree)).to.equal(
+            tokensToSend1
+          );
           assert.equal(response0, 100);
           assert.equal(response1, 50);
         });
+
         it("Checking if the ERC20 Tokens are sent properly part 3", async () => {
           await Dutch_Auction_u_1.addBidder({
             value: ethers.parseEther("0.000000000000001"),
@@ -347,34 +269,47 @@ const {
           await Dutch_Auction_u_1.addBidder({
             value: ethers.parseEther("0.000000000000001"),
           });
+
+          const userTwoBalanceBegin = await ethers.provider.getBalance(userTwo);
+          await time.increase(180);
+
           await Dutch_Auction_u_3.addBidder({
             value: ethers.parseEther("0.000000000000001"),
           });
           const ContractBalance = await ethers.provider.getBalance(
             Dutch_Auction_d.target
           );
-          const userTwoBalanceBegin = await ethers.provider.getBalance(userTwo);
           assert.equal(ContractBalance, 4000);
-          await time.increase(120);
 
           const transactionResponse = await Dutch_Auction_d.endAuction();
           await transactionResponse.wait();
 
           const response0 = await Dutch_Auction_d.retrieveBidderAlgos(userOne);
           const response1 = await Dutch_Auction_d.retrieveBidderAlgos(userTwo);
-          const tokensToSend = ethers.parseEther(response0.toString());
-          const tokensToSend1 = ethers.parseEther(response1.toString());
-          expect(await ERC20Token.balanceOf(userOne)).to.equal(tokensToSend);
-          expect(await ERC20Token.balanceOf(userTwo)).to.equal(tokensToSend1);
-          expect(await ERC20Token.balanceOf(userThree)).to.equal(tokensToSend1);
           assert.equal(response0, 200);
           assert.equal(response1, 0);
+
+          const tokensToSend = ethers.parseEther(response0.toString());
+          const tokensToSend1 = ethers.parseEther(response1.toString());
+
+          expect(await Dutch_Auction_d.balanceOfBidder(userOne)).to.equal(
+            tokensToSend
+          );
+          expect(await Dutch_Auction_d.balanceOfBidder(userTwo)).to.equal(
+            tokensToSend1
+          );
+          expect(await Dutch_Auction_d.balanceOfBidder(userThree)).to.equal(
+            tokensToSend1
+          );
+
           const EndContractBalance = await ethers.provider.getBalance(
             Dutch_Auction_d.target
           );
           assert.equal(EndContractBalance, 2000);
+
           const response2 = await Dutch_Auction_d.retrieveRefund(userTwo);
           assert.equal(response2, 1000);
+
           const userTwoBalanceEnd = await ethers.provider.getBalance(userTwo);
           assert.equal(userTwoBalanceEnd - userTwoBalanceBegin, 1000);
         });
