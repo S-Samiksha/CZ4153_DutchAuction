@@ -323,9 +323,6 @@ const {
           );
           assert.equal(EndContractBalance, 2000);
 
-          const response2 = await Dutch_Auction_d.retrieveRefund(userTwo);
-          assert.equal(response2, 1000);
-
           const userTwoBalanceEnd = await ethers.provider.getBalance(userTwo);
           assert.equal(userTwoBalanceEnd - userTwoBalanceBegin, 1000);
         });

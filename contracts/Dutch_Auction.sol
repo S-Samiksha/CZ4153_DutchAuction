@@ -4,13 +4,14 @@ pragma solidity ^0.8.21;
 
 // Using our own ERC20Token
 import "./ERC20Token.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 error Dutch_Auction__NotOwner();
 error Dutch_Auction__IsOwner();
 error Dutch_Auction__NotOpen();
 error Dutch_Auction__Open();
 
-contract Dutch_Auction {
+contract Dutch_Auction is ReentrancyGuard {
     int256 private currentPrice; //in wei
     uint256 private totalNumBidders = 0;
     uint256 private immutable startPrice; //in wei
@@ -218,16 +219,22 @@ contract Dutch_Auction {
 
     function refundETH() public onlyOwner AuctionClosed {
         for (uint i = 0; i < biddersAddress.length; i++) {
-            if (biddersList[biddersAddress[i]].refundEth > 0) {
+            if (
+                biddersList[biddersAddress[i]].refundEth > 0 &&
+                address(this).balance > biddersList[biddersAddress[i]].refundEth
+            ) {
                 //refundETH
+                uint256 sendValue = biddersList[biddersAddress[i]].refundEth;
+                biddersList[biddersAddress[i]].refundEth = 0; // re-entrancy attack prevention
                 (bool callSuccess, ) = payable(
                     biddersList[biddersAddress[i]].walletAddress
-                ).call{value: biddersList[biddersAddress[i]].refundEth}("");
+                ).call{value: sendValue}("");
+                sendValue = 0;
                 require(callSuccess, "Failed to send ether");
                 emit RefundEvent(
                     biddersAddress[i],
                     biddersList[biddersAddress[i]].totalAlgosPurchased,
-                    biddersList[biddersAddress[i]].refundEth
+                    sendValue
                 );
             }
         }
