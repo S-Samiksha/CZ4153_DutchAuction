@@ -14,6 +14,7 @@ const INITIAL_SUPPLY = (INITIAL_SUPPLY_INT * 10 ** 18).toString();
 const RESERVE_PRICE = 10;
 const START_PRICE = 50;
 const INTERVAL = 30;
+const CHANGEPERMIN = 15;
 
 const developmentChains = ["hardhat", "localhost"];
 
@@ -25,4 +26,5 @@ module.exports = {
   RESERVE_PRICE,
   START_PRICE,
   INTERVAL,
+  CHANGEPERMIN,
 };

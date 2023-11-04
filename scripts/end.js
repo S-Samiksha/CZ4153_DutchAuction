@@ -1,12 +1,14 @@
 const { ethers, getNamedAccounts } = require("hardhat");
 
 async function main() {
-  const { deployer, userOne, userTwo } = await getNamedAccounts();
+  const { deployer } = await getNamedAccounts();
   const Dutch_Auction = await ethers.getContract("Dutch_Auction", deployer);
+  const ERC20Token = await ethers.getContract("ERC20Token", deployer);
   console.log(`Got contract DA at ${Dutch_Auction.target}`);
-  console.log("Checking Bidder...");
-  const transactionResponse = await Dutch_Auction.retrieveBidderAlgos(userOne);
-  console.log(`User One bidded: ${transactionResponse}`);
+  console.log("Ended Auction...");
+  const transactionResponse = await Dutch_Auction.endAuction();
+  await transactionResponse.wait();
+  console.log("Auction Ended!");
 }
 
 main()
