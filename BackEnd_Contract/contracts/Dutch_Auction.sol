@@ -22,6 +22,7 @@ contract Dutch_Auction is ReentrancyGuard {
     uint256 private constant AUCTION_TIME = 1200; //in seconds
     uint256 private currentUnsoldAlgos;
     uint256 private changePerMin;
+    bool private prematureEnd = false;
 
     ERC20Token private DAToken; //importing Token
     address private ERC20ContractAddress;
@@ -133,6 +134,8 @@ contract Dutch_Auction is ReentrancyGuard {
         s_auctionState = AuctionState.OPEN;
         totalAlgosAvailable = _totalAlgosAvailable;
         changePerMin = _changePerMin;
+        currentPrice = int256(startPrice);
+        currentUnsoldAlgos = _totalAlgosAvailable;
         startTime = block.timestamp; //Start time of when the contract is deployed
         DAToken = new ERC20Token(totalAlgosAvailable, address(this));
         ERC20ContractAddress = address(DAToken);
@@ -171,9 +174,11 @@ contract Dutch_Auction is ReentrancyGuard {
             newBidder.walletAddress,
             newBidder.bidValue
         );
+        calculate(); //calculate again in case the tokens are run out 
     }
 
     function updateCurrentPrice() public {
+        if (!prematureEnd){
         currentPrice =
             int256(startPrice) -
             int256((block.timestamp - startTime) / 60) *
@@ -186,6 +191,7 @@ contract Dutch_Auction is ReentrancyGuard {
             (block.timestamp - startTime),
             uint256(currentPrice)
         );
+        }
     }
 
     function sendTokens() public onlyOwner AuctionClosed {
@@ -276,6 +282,7 @@ contract Dutch_Auction is ReentrancyGuard {
         } else {
             s_auctionState = AuctionState.CLOSING;
             currentUnsoldAlgos = 0;
+            prematureEnd = true;
         }
     }
 

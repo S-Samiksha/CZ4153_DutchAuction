@@ -324,8 +324,36 @@ const {
           );
           assert.equal(EndContractBalance, 2000);
 
-          const userOneBalanceEnd = await ethers.provider.getBalance(userOne);
+          const userOneBalanceEnd = await ethers.provider.getBalance(userOne); //check the balance of userOne
           assert.equal(userOneBalanceEnd - userOneBalanceBegin, 1000);
+        });
+
+        it("Re Entry Attack", async () => {
+          await Dutch_Auction_u_1.addBidder({
+            value: ethers.parseEther("0.000000000000005"),
+          });
+          await Dutch_Auction_u_2.addBidder({
+            value: ethers.parseEther("0.000000000000002"),
+          });
+          await Dutch_Auction_u_1.addBidder({
+            value: ethers.parseEther("0.000000000000001"),
+          });
+          ReEntryAttack = await ethers.getContract("ReEntrancyAttack", userOne);
+
+          const response = await ReEntryAttack.ReentranceAttack1({
+            value: ethers.parseEther("0.000000000000001"),
+          });
+          const attackerWalletBefore = await ethers.provider.getBalance(
+            ReEntryAttack.target
+          );
+
+          await time.increase(180);
+          Dutch_Auction_d.endAuction();
+          const attackerWalletEnd = await ethers.provider.getBalance(
+            ReEntryAttack.target
+          );
+          assert.equal(attackerWalletBefore - attackerWalletEnd, 0);
+          //the attacker should have the same balance as before and not one ETH more
         });
       });
     });
