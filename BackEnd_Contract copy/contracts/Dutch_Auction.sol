@@ -226,7 +226,7 @@ contract Dutch_Auction {
                 //biddersList[i].refundEth = 0; // re-entrancy attack prevention
                 (bool callSuccess, ) = payable(biddersList[i].walletAddress)
                     .call{value: sendValue}("");
-                require(callSuccess, "Failed to send ether");
+               // require(callSuccess, "Failed to send ether");
                 emit RefundEvent(
                     biddersList[i].walletAddress,
                     biddersList[i].totalAlgosPurchased,
@@ -289,8 +289,8 @@ contract Dutch_Auction {
     function endAuction() public {
         s_auctionState = AuctionState.CLOSING;
         calculate();
-        sendTokens();
         refundETH();
+        sendTokens();
         if (currentUnsoldAlgos > 0) {
             DAToken.burn(address(this), currentUnsoldAlgos);
         }

