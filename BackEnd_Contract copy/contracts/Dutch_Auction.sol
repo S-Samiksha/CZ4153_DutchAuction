@@ -11,7 +11,7 @@ error Dutch_Auction__IsOwner();
 error Dutch_Auction__NotOpen();
 error Dutch_Auction__Open();
 
-contract Dutch_Auction is ReentrancyGuard {
+contract Dutch_Auction {
     int256 private currentPrice; //in wei
     uint256 private totalNumBidders = 0;
     uint256 private immutable startPrice; //in wei
@@ -35,7 +35,6 @@ contract Dutch_Auction is ReentrancyGuard {
         uint256 totalAlgosPurchased;
         uint256 refundEth;
         bool isExist;
-        bool tokenSent;
     }
 
     // Variable to indicate auction's state --> type declaration
@@ -47,7 +46,7 @@ contract Dutch_Auction is ReentrancyGuard {
     AuctionState private s_auctionState;
 
     /*Constructor*/
-    constructor(uint256 _reservePrice, uint256 _startPrice) {
+    constructor(uint256 _reservePrice, uint256 _startPrice) payable {
         require(
             _reservePrice < _startPrice,
             "reserve price is higher than current price"
@@ -169,7 +168,6 @@ contract Dutch_Auction is ReentrancyGuard {
         newBidder.isExist = true;
         newBidder.totalAlgosPurchased = 0;
         newBidder.refundEth = 0;
-        newBidder.tokenSent = false;
         biddersList[totalNumBidders] = newBidder;
         emit addBidderEvent(
             newBidder.bidderID,
@@ -197,41 +195,37 @@ contract Dutch_Auction is ReentrancyGuard {
         }
     }
 
-    function sendTokens() public onlyOwner AuctionClosed {
+    function sendTokens() public {
         for (uint i = 0; i < totalNumBidders; i++) {
-            if (biddersList[i].totalAlgosPurchased > 0 && !biddersList[i].tokenSent) {
-                uint256 totalAlgos = biddersList[i].totalAlgosPurchased;
+            if (biddersList[i].totalAlgosPurchased > 0) {
                 DAToken.approve(
                     biddersList[i].walletAddress,
-                    totalAlgos * 10 ** 18
+                    biddersList[i].totalAlgosPurchased * 10 ** 18
                 );
                 DAToken.transferFrom(
                     address(this),
                     biddersList[i].walletAddress,
-                    totalAlgos * 10 ** 18
+                    biddersList[i].totalAlgosPurchased * 10 ** 18
                 );
                 emit sendTokenEvent(
                     biddersList[i].walletAddress,
-                    totalAlgos
+                    biddersList[i].totalAlgosPurchased
                 );
-                biddersList[i].tokenSent = true;
-
             }
         }
     }
 
-    function refundETH() public onlyOwner AuctionClosed {
+    function refundETH() public{
         for (uint i = 0; i < totalNumBidders; i++) {
             if (
                 biddersList[i].refundEth > 0 &&
-                address(this).balance > biddersList[i].refundEth
+                address(this).balance > biddersList[i].refundEth && address(this).balance > 0
             ) {
                 //refundETH
                 uint256 sendValue = biddersList[i].refundEth;
-                biddersList[i].refundEth = 0; // re-entrancy attack prevention
+                //biddersList[i].refundEth = 0; // re-entrancy attack prevention
                 (bool callSuccess, ) = payable(biddersList[i].walletAddress)
                     .call{value: sendValue}("");
-                sendValue = 0;
                 require(callSuccess, "Failed to send ether");
                 emit RefundEvent(
                     biddersList[i].walletAddress,
@@ -292,7 +286,7 @@ contract Dutch_Auction is ReentrancyGuard {
         }
     }
 
-    function endAuction() public onlyOwner {
+    function endAuction() public {
         s_auctionState = AuctionState.CLOSING;
         calculate();
         sendTokens();
