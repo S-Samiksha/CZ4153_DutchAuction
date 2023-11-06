@@ -207,22 +207,26 @@ const {
           const response0 = await Dutch_Auction_d.retrieveBidderAlgos(0);
           const response1 = await Dutch_Auction_d.retrieveBidderAlgos(1);
           const response2 = await Dutch_Auction_d.retrieveBidderAlgos(2);
-          const response3 = await Dutch_Auction_d.retrieveBidderAlgos(3);
+          const tokensToSend =
+            ethers.parseEther(response0.toString()) +
+            ethers.parseEther(response2.toString());
 
-          const tokensToSendUserOne = response0 + response2;
+          const tokensToSend1 = ethers.parseEther(response1.toString());
 
-          const tokensToSendUserTwo = response1;
-          const tokensToSendUserThree = response3;
+          expect(
+            (await Dutch_Auction_d.balanceOfBidder(0)) +
+              (await Dutch_Auction_d.balanceOfBidder(2))
+          ).to.equal(tokensToSend);
 
-          assert.equal(tokensToSendUserOne, 40);
-          assert.equal(tokensToSendUserTwo, 20);
-
-          const tokenBalanceSent = await Dutch_Auction_d.balanceOfBidder(0);
-
-          assert.equal(
-            tokenBalanceSent,
-            ethers.parseEther(tokensToSendUserOne.toString())
+          expect(await Dutch_Auction_d.balanceOfBidder(1)).to.equal(
+            tokensToSend1
           );
+
+          expect(await Dutch_Auction_d.balanceOfBidder(3)).to.equal(
+            tokensToSend1
+          );
+          assert.equal(response0, 20);
+          assert.equal(response1, 20);
         });
 
         it("Checking if the ERC20 Tokens are sent properly (increment in time testing, reservation price is not hit, but all tokens sold out)", async () => {
@@ -251,10 +255,8 @@ const {
 
           const response0 = await Dutch_Auction_d.retrieveBidderAlgos(0);
           const response1 = await Dutch_Auction_d.retrieveBidderAlgos(1);
-          const response2 = await Dutch_Auction_d.retrieveBidderAlgos(2);
           const tokensToSend = ethers.parseEther(response0.toString());
           const tokensToSend1 = ethers.parseEther(response1.toString());
-          const tokensToSend2 = ethers.parseEther(response2.toString());
 
           expect(await Dutch_Auction_d.balanceOfBidder(0)).to.equal(
             tokensToSend
@@ -263,13 +265,13 @@ const {
             tokensToSend1
           );
           expect(await Dutch_Auction_d.balanceOfBidder(2)).to.equal(
-            tokensToSend2
+            tokensToSend1
           );
           assert.equal(response0, 50);
           assert.equal(response1, 50);
         });
 
-        it("Checking if the ERC20 Tokens are sent properly (if the tokens run out before 20min and reservation price is hit)", async () => {
+        it("Checking for Re-Entrancy Attack", async () => {
           await Dutch_Auction_u_1.addBidder({
             value: ethers.parseEther("0.000000000000001"),
           });
@@ -280,8 +282,13 @@ const {
             value: ethers.parseEther("0.000000000000001"),
           });
 
-          const userOneBalanceBegin = await ethers.provider.getBalance(userOne);
+          const userTwoBalanceBegin = await ethers.provider.getBalance(userTwo);
           await time.increase(180);
+          //180seconds = 3min
+          //180/60*15 = 3*15 = 45
+          //50-45 = 5
+          // but reserve price is 10
+          // at price = 50 --> 2000/50 = 40 and at 1000/50 = 20
 
           await expect(
             Dutch_Auction_u_3.addBidder({
@@ -297,17 +304,15 @@ const {
           await Dutch_Auction_d.updateCurrentPrice();
           const updateCurrentPrice =
             await Dutch_Auction_d.retrieveCurrentPrice();
-          assert.equal(updateCurrentPrice, 10); // must be at reserve price
+          assert.equal(updateCurrentPrice, 10);
 
           const transactionResponse = await Dutch_Auction_d.endAuction();
           await transactionResponse.wait();
 
-          const response0 = await Dutch_Auction_d.retrieveBidderAlgos(0);
-          const response1 = await Dutch_Auction_d.retrieveBidderAlgos(1);
-          const response2 = await Dutch_Auction_d.retrieveBidderAlgos(2);
-          assert.equal(response0, 100);
-          assert.equal(response1, 100);
-          assert.equal(response2, 0);
+          const response0 = await Dutch_Auction_d.retrieveBidderAlgos(userOne);
+          const response1 = await Dutch_Auction_d.retrieveBidderAlgos(userTwo);
+          assert.equal(response0, 200);
+          assert.equal(response1, 0);
 
           const tokensToSend = ethers.parseEther(response0.toString());
           const tokensToSend1 = ethers.parseEther(response1.toString());
@@ -318,14 +323,82 @@ const {
           expect(await Dutch_Auction_d.balanceOfBidder(1)).to.equal(
             tokensToSend1
           );
+          expect(await Dutch_Auction_d.balanceOfBidder(2)).to.equal(
+            tokensToSend1
+          );
 
           const EndContractBalance = await ethers.provider.getBalance(
             Dutch_Auction_d.target
           );
           assert.equal(EndContractBalance, 2000);
 
-          const userOneBalanceEnd = await ethers.provider.getBalance(userOne);
-          assert.equal(userOneBalanceEnd - userOneBalanceBegin, 1000);
+          const userTwoBalanceEnd = await ethers.provider.getBalance(userTwo);
+          assert.equal(userTwoBalanceEnd - userTwoBalanceBegin, 1000);
+        });
+
+        it("Checking if the ERC20 Tokens are sent properly (if the tokens run out before 20min and reservation price is hit)", async () => {
+          await Dutch_Auction_u_1.addBidder({
+            value: ethers.parseEther("0.000000000000001"),
+          });
+          await Dutch_Auction_u_2.addBidder({
+            value: ethers.parseEther("0.000000000000001"),
+          });
+          await Dutch_Auction_u_1.addBidder({
+            value: ethers.parseEther("0.000000000000001"),
+          });
+
+          const userTwoBalanceBegin = await ethers.provider.getBalance(userTwo);
+          await time.increase(180);
+          //180seconds = 3min
+          //180/60*15 = 3*15 = 45
+          //50-45 = 5
+          // but reserve price is 10
+          // at price = 50 --> 2000/50 = 40 and at 1000/50 = 20
+
+          await expect(
+            Dutch_Auction_u_3.addBidder({
+              value: ethers.parseEther("0.000000000000001"),
+            })
+          ).to.be.revertedWith("There is no more algos left");
+
+          const ContractBalance = await ethers.provider.getBalance(
+            Dutch_Auction_d.target
+          );
+          assert.equal(ContractBalance, 3000);
+
+          await Dutch_Auction_d.updateCurrentPrice();
+          const updateCurrentPrice =
+            await Dutch_Auction_d.retrieveCurrentPrice();
+          assert.equal(updateCurrentPrice, 10);
+
+          const transactionResponse = await Dutch_Auction_d.endAuction();
+          await transactionResponse.wait();
+
+          const response0 = await Dutch_Auction_d.retrieveBidderAlgos(0);
+          const response1 = await Dutch_Auction_d.retrieveBidderAlgos(1);
+          assert.equal(response0, 200);
+          assert.equal(response1, 0);
+
+          const tokensToSend = ethers.parseEther(response0.toString());
+          const tokensToSend1 = ethers.parseEther(response1.toString());
+
+          expect(await Dutch_Auction_d.balanceOfBidder(0)).to.equal(
+            tokensToSend
+          );
+          expect(await Dutch_Auction_d.balanceOfBidder(1)).to.equal(
+            tokensToSend1
+          );
+          expect(await Dutch_Auction_d.balanceOfBidder(2)).to.equal(
+            tokensToSend1
+          );
+
+          const EndContractBalance = await ethers.provider.getBalance(
+            Dutch_Auction_d.target
+          );
+          assert.equal(EndContractBalance, 2000);
+
+          const userTwoBalanceEnd = await ethers.provider.getBalance(userTwo);
+          assert.equal(userTwoBalanceEnd - userTwoBalanceBegin, 1000);
         });
       });
     });
