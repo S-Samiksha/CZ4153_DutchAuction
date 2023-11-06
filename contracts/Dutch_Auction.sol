@@ -321,7 +321,7 @@ contract Dutch_Auction is ReentrancyGuard {
         return reservePrice;
     }
 
-    function retrieveCurrentPrice() public view onlyOwner returns (int256) {
+    function retrieveCurrentPrice() public view returns (int256) {
         return currentPrice;
     }
 
@@ -329,7 +329,7 @@ contract Dutch_Auction is ReentrancyGuard {
         return totalNumBidders;
     }
 
-    function retrieveContractOwner() public view onlyOwner returns (address) {
+    function retrieveContractOwner() public view returns (address) {
         return i_owner;
     }
 
