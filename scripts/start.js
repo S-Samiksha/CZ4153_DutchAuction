@@ -1,13 +1,19 @@
 const { ethers, getNamedAccounts } = require("hardhat");
+const {
+  networkConfig,
+  developmentChains,
+  INITIAL_SUPPLY_INT,
+  CHANGEPERMIN,
+} = require("../helper-hardhat-config");
 
 async function main() {
   const { deployer } = await getNamedAccounts();
   const Dutch_Auction = await ethers.getContract("Dutch_Auction", deployer);
-  const ERC20Token = await ethers.getContract("ERC20Token", deployer);
   console.log(`Got contract DA at ${Dutch_Auction.target}`);
   console.log("Starting Auction...");
   const transactionResponse = await Dutch_Auction.startAuction(
-    ERC20Token.target
+    INITIAL_SUPPLY_INT,
+    CHANGEPERMIN
   );
   await transactionResponse.wait();
   console.log("Auction Started!");

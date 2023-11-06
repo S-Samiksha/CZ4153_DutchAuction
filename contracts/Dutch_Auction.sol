@@ -25,9 +25,7 @@ contract Dutch_Auction is ReentrancyGuard {
 
     ERC20Token private DAToken; //importing Token
     address private ERC20ContractAddress;
-    address[] biddersAddress;
-
-    mapping(address => Bidder) public biddersList; //to be made private later <for debugging purposes>
+    mapping(uint256 => Bidder) public biddersList; //to be made private later <for debugging purposes>
 
     struct Bidder {
         uint256 bidderID;
@@ -160,24 +158,19 @@ contract Dutch_Auction is ReentrancyGuard {
         require(currentUnsoldAlgos > 0, "There is no more algos left");
 
         // Adding or Updating the bidders currently in the contract
-        if (!biddersList[msg.sender].isExist) {
-            Bidder storage newBidder = biddersList[msg.sender];
-            newBidder.bidderID = ++totalNumBidders;
-            newBidder.walletAddress = msg.sender;
-            newBidder.bidValue = msg.value;
-            newBidder.isExist = true;
-            newBidder.totalAlgosPurchased = 0;
-            newBidder.refundEth = 0;
-            biddersAddress.push(msg.sender);
-            emit addBidderEvent(
-                newBidder.bidderID,
-                newBidder.walletAddress,
-                newBidder.bidValue
-            );
-        } else {
-            Bidder storage existingBidder = biddersList[msg.sender];
-            existingBidder.bidValue += msg.value;
-        }
+        Bidder storage newBidder = biddersList[totalNumBidders];
+        newBidder.bidderID = ++totalNumBidders;
+        newBidder.walletAddress = msg.sender;
+        newBidder.bidValue = msg.value;
+        newBidder.isExist = true;
+        newBidder.totalAlgosPurchased = 0;
+        newBidder.refundEth = 0;
+        biddersList[totalNumBidders] = newBidder;
+        emit addBidderEvent(
+            newBidder.bidderID,
+            newBidder.walletAddress,
+            newBidder.bidValue
+        );
     }
 
     function updateCurrentPrice() public {
@@ -196,44 +189,41 @@ contract Dutch_Auction is ReentrancyGuard {
     }
 
     function sendTokens() public onlyOwner AuctionClosed {
-        for (uint i = 0; i < biddersAddress.length; i++) {
-            if (biddersList[biddersAddress[i]].totalAlgosPurchased > 0) {
+        for (uint i = 0; i < totalNumBidders; i++) {
+            if (biddersList[i].totalAlgosPurchased > 0) {
                 DAToken.approve(
-                    biddersAddress[i],
-                    biddersList[biddersAddress[i]].totalAlgosPurchased *
-                        10 ** 18
+                    biddersList[i].walletAddress,
+                    biddersList[i].totalAlgosPurchased * 10 ** 18
                 );
                 DAToken.transferFrom(
                     address(this),
-                    biddersAddress[i],
-                    biddersList[biddersAddress[i]].totalAlgosPurchased *
-                        10 ** 18
+                    biddersList[i].walletAddress,
+                    biddersList[i].totalAlgosPurchased * 10 ** 18
                 );
                 emit sendTokenEvent(
-                    biddersAddress[i],
-                    biddersList[biddersAddress[i]].totalAlgosPurchased
+                    biddersList[i].walletAddress,
+                    biddersList[i].totalAlgosPurchased
                 );
             }
         }
     }
 
     function refundETH() public onlyOwner AuctionClosed {
-        for (uint i = 0; i < biddersAddress.length; i++) {
+        for (uint i = 0; i < totalNumBidders; i++) {
             if (
-                biddersList[biddersAddress[i]].refundEth > 0 &&
-                address(this).balance > biddersList[biddersAddress[i]].refundEth
+                biddersList[i].refundEth > 0 &&
+                address(this).balance > biddersList[i].refundEth
             ) {
                 //refundETH
-                uint256 sendValue = biddersList[biddersAddress[i]].refundEth;
-                biddersList[biddersAddress[i]].refundEth = 0; // re-entrancy attack prevention
-                (bool callSuccess, ) = payable(
-                    biddersList[biddersAddress[i]].walletAddress
-                ).call{value: sendValue}("");
+                uint256 sendValue = biddersList[i].refundEth;
+                biddersList[i].refundEth = 0; // re-entrancy attack prevention
+                (bool callSuccess, ) = payable(biddersList[i].walletAddress)
+                    .call{value: sendValue}("");
                 sendValue = 0;
                 require(callSuccess, "Failed to send ether");
                 emit RefundEvent(
-                    biddersAddress[i],
-                    biddersList[biddersAddress[i]].totalAlgosPurchased,
+                    biddersList[i].walletAddress,
+                    biddersList[i].totalAlgosPurchased,
                     sendValue
                 );
             }
@@ -243,48 +233,41 @@ contract Dutch_Auction is ReentrancyGuard {
     function calculate() public {
         updateCurrentPrice();
         uint256 currentAlgos = totalAlgosAvailable;
-        for (uint i = 0; i < biddersAddress.length; i++) {
+        for (uint i = 0; i < totalNumBidders; i++) {
             //if there is sufficient algos for this current bidder
             if (
-                currentAlgos >=
-                biddersList[biddersAddress[i]].bidValue / uint256(currentPrice)
+                currentAlgos >= biddersList[i].bidValue / uint256(currentPrice)
             ) {
-                biddersList[biddersAddress[i]].totalAlgosPurchased =
-                    biddersList[biddersAddress[i]].bidValue /
+                biddersList[i].totalAlgosPurchased =
+                    biddersList[i].bidValue /
                     uint256(currentPrice);
-                currentAlgos -=
-                    biddersList[biddersAddress[i]].bidValue /
-                    uint256(currentPrice);
-                biddersList[biddersAddress[i]].refundEth = 0;
+                currentAlgos -= biddersList[i].bidValue / uint256(currentPrice);
+                biddersList[i].refundEth = 0;
             }
             //Else if there is algos left but it is less than the amount the bidder bidded
             // he gets all the remaining algos and is refunded the ETH.
             else if (
                 currentAlgos > 0 &&
-                currentAlgos <
-                biddersList[biddersAddress[i]].bidValue / uint256(currentPrice)
+                currentAlgos < biddersList[i].bidValue / uint256(currentPrice)
             ) {
-                biddersList[biddersAddress[i]]
-                    .totalAlgosPurchased = currentAlgos;
+                biddersList[i].totalAlgosPurchased = currentAlgos;
                 currentAlgos = 0;
-                biddersList[biddersAddress[i]].refundEth =
-                    biddersList[biddersAddress[i]].bidValue -
-                    biddersList[biddersAddress[i]].totalAlgosPurchased *
+                biddersList[i].refundEth =
+                    biddersList[i].bidValue -
+                    biddersList[i].totalAlgosPurchased *
                     uint256(currentPrice);
             }
             //there is no algos left
             // reset the total algos purchased to 0
             else if (currentAlgos <= 0) {
                 //refund for the rest
-                biddersList[biddersAddress[i]].totalAlgosPurchased = 0;
-                biddersList[biddersAddress[i]].refundEth = biddersList[
-                    biddersAddress[i]
-                ].bidValue;
+                biddersList[i].totalAlgosPurchased = 0;
+                biddersList[i].refundEth = biddersList[i].bidValue;
             }
             emit RefundEvent(
-                biddersAddress[i],
-                biddersList[biddersAddress[i]].totalAlgosPurchased,
-                biddersList[biddersAddress[i]].refundEth
+                biddersList[i].walletAddress,
+                biddersList[i].totalAlgosPurchased,
+                biddersList[i].refundEth
             );
         }
 
@@ -338,25 +321,25 @@ contract Dutch_Auction is ReentrancyGuard {
     }
 
     function retrieveBidderBidValue(
-        address bidder
+        uint256 bidder
     ) public view onlyOwner returns (uint256) {
         return biddersList[bidder].bidValue;
     }
 
     function retrieveBidderAlgos(
-        address bidder
+        uint256 bidder
     ) public view onlyOwner returns (uint256) {
         return biddersList[bidder].totalAlgosPurchased;
     }
 
     function retrieveRefund(
-        address bidder
+        uint256 bidder
     ) public view onlyOwner returns (uint256) {
         return biddersList[bidder].refundEth;
     }
 
-    function balanceOfBidder(address bidder) public view returns (uint256) {
-        return DAToken.balanceOf(bidder);
+    function balanceOfBidder(uint256 bidder) public view returns (uint256) {
+        return DAToken.balanceOf(biddersList[bidder].walletAddress);
     }
 
     fallback() external payable {

@@ -170,15 +170,12 @@ const {
           });
           const response1 = await Dutch_Auction_d.retrieveContractBalance();
           const response2 = await Dutch_Auction_d.retrieveTotalBidder();
-          const response3 = await Dutch_Auction_d.retrieveBidderBidValue(
-            userOne
-          );
-          const response4 = await Dutch_Auction_d.retrieveBidderBidValue(
-            userTwo
-          );
+          const response3 = await Dutch_Auction_d.retrieveBidderBidValue(0);
+          const response5 = await Dutch_Auction_d.retrieveBidderBidValue(2);
+          const response4 = await Dutch_Auction_d.retrieveBidderBidValue(1);
           assert.equal(response1, 3000);
-          assert.equal(response2, 2);
-          assert.equal(response3, 2000);
+          assert.equal(response2, 3);
+          assert.equal(response3 + response5, 2000);
           assert.equal(response4, 1000);
         });
 
@@ -200,23 +197,35 @@ const {
             value: ethers.parseEther("0.000000000000001"),
           });
 
+          //bid 0: user 1
+          //bid 1: user 2
+          //bid 2: user 1 second bid
+          //bid 3: user 3
           const transactionResponse = await Dutch_Auction_d.endAuction();
           await transactionResponse.wait();
 
-          const response0 = await Dutch_Auction_d.retrieveBidderAlgos(userOne);
-          const response1 = await Dutch_Auction_d.retrieveBidderAlgos(userTwo);
-          const tokensToSend = ethers.parseEther(response0.toString());
+          const response0 = await Dutch_Auction_d.retrieveBidderAlgos(0);
+          const response1 = await Dutch_Auction_d.retrieveBidderAlgos(1);
+          const response2 = await Dutch_Auction_d.retrieveBidderAlgos(2);
+          const tokensToSend =
+            ethers.parseEther(response0.toString()) +
+            ethers.parseEther(response2.toString());
+
           const tokensToSend1 = ethers.parseEther(response1.toString());
-          expect(await Dutch_Auction_d.balanceOfBidder(userOne)).to.equal(
-            tokensToSend
-          );
-          expect(await Dutch_Auction_d.balanceOfBidder(userTwo)).to.equal(
+
+          expect(
+            (await Dutch_Auction_d.balanceOfBidder(0)) +
+              (await Dutch_Auction_d.balanceOfBidder(2))
+          ).to.equal(tokensToSend);
+
+          expect(await Dutch_Auction_d.balanceOfBidder(1)).to.equal(
             tokensToSend1
           );
-          expect(await Dutch_Auction_d.balanceOfBidder(userThree)).to.equal(
+
+          expect(await Dutch_Auction_d.balanceOfBidder(3)).to.equal(
             tokensToSend1
           );
-          assert.equal(response0, 40);
+          assert.equal(response0, 20);
           assert.equal(response1, 20);
         });
 
@@ -230,10 +239,10 @@ const {
           await Dutch_Auction_u_2.addBidder({
             value: ethers.parseEther("0.000000000000001"),
           });
-          await Dutch_Auction_u_1.addBidder({
-            value: ethers.parseEther("0.000000000000001"),
-          });
           await Dutch_Auction_u_3.addBidder({
+            value: ethers.parseEther("0.000000000000002"),
+          });
+          await Dutch_Auction_u_1.addBidder({
             value: ethers.parseEther("0.000000000000001"),
           });
           await time.increase(120);
@@ -244,21 +253,21 @@ const {
           const transactionResponse = await Dutch_Auction_d.endAuction();
           await transactionResponse.wait();
 
-          const response0 = await Dutch_Auction_d.retrieveBidderAlgos(userOne);
-          const response1 = await Dutch_Auction_d.retrieveBidderAlgos(userTwo);
+          const response0 = await Dutch_Auction_d.retrieveBidderAlgos(0);
+          const response1 = await Dutch_Auction_d.retrieveBidderAlgos(1);
           const tokensToSend = ethers.parseEther(response0.toString());
           const tokensToSend1 = ethers.parseEther(response1.toString());
 
-          expect(await Dutch_Auction_d.balanceOfBidder(userOne)).to.equal(
+          expect(await Dutch_Auction_d.balanceOfBidder(0)).to.equal(
             tokensToSend
           );
-          expect(await Dutch_Auction_d.balanceOfBidder(userTwo)).to.equal(
+          expect(await Dutch_Auction_d.balanceOfBidder(1)).to.equal(
             tokensToSend1
           );
-          expect(await Dutch_Auction_d.balanceOfBidder(userThree)).to.equal(
+          expect(await Dutch_Auction_d.balanceOfBidder(2)).to.equal(
             tokensToSend1
           );
-          assert.equal(response0, 100);
+          assert.equal(response0, 50);
           assert.equal(response1, 50);
         });
 
@@ -308,13 +317,13 @@ const {
           const tokensToSend = ethers.parseEther(response0.toString());
           const tokensToSend1 = ethers.parseEther(response1.toString());
 
-          expect(await Dutch_Auction_d.balanceOfBidder(userOne)).to.equal(
+          expect(await Dutch_Auction_d.balanceOfBidder(0)).to.equal(
             tokensToSend
           );
-          expect(await Dutch_Auction_d.balanceOfBidder(userTwo)).to.equal(
+          expect(await Dutch_Auction_d.balanceOfBidder(1)).to.equal(
             tokensToSend1
           );
-          expect(await Dutch_Auction_d.balanceOfBidder(userThree)).to.equal(
+          expect(await Dutch_Auction_d.balanceOfBidder(2)).to.equal(
             tokensToSend1
           );
 
@@ -365,21 +374,21 @@ const {
           const transactionResponse = await Dutch_Auction_d.endAuction();
           await transactionResponse.wait();
 
-          const response0 = await Dutch_Auction_d.retrieveBidderAlgos(userOne);
-          const response1 = await Dutch_Auction_d.retrieveBidderAlgos(userTwo);
+          const response0 = await Dutch_Auction_d.retrieveBidderAlgos(0);
+          const response1 = await Dutch_Auction_d.retrieveBidderAlgos(1);
           assert.equal(response0, 200);
           assert.equal(response1, 0);
 
           const tokensToSend = ethers.parseEther(response0.toString());
           const tokensToSend1 = ethers.parseEther(response1.toString());
 
-          expect(await Dutch_Auction_d.balanceOfBidder(userOne)).to.equal(
+          expect(await Dutch_Auction_d.balanceOfBidder(0)).to.equal(
             tokensToSend
           );
-          expect(await Dutch_Auction_d.balanceOfBidder(userTwo)).to.equal(
+          expect(await Dutch_Auction_d.balanceOfBidder(1)).to.equal(
             tokensToSend1
           );
-          expect(await Dutch_Auction_d.balanceOfBidder(userThree)).to.equal(
+          expect(await Dutch_Auction_d.balanceOfBidder(2)).to.equal(
             tokensToSend1
           );
 
