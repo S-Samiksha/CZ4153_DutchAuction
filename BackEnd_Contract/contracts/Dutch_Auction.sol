@@ -343,11 +343,11 @@ contract Dutch_Auction is ReentrancyGuard {
     }
 
     fallback() external payable {
-        addBidder();
+        // addBidder();
     }
 
     receive() external payable {
-        addBidder();
+        // addBidder();
     }
 
     function getAuctionState() public view returns (AuctionState) {
