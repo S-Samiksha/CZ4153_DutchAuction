@@ -349,7 +349,10 @@ const {
 
           await Dutch_Auction_d.endAuction();
 
-          await ReEntryAttack.reEnter();
+          //after experiments we know that there is a recursion limit on the functions --> maximally can run 58 times per refund call
+          //per iteration you will get only 0.000000000000058
+          //means you need to run at least 172413793103 times
+
           const attackerWalletEnd = await ethers.provider.getBalance(
             ReEntryAttack.target
           );
