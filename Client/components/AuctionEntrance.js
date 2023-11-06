@@ -142,6 +142,7 @@ export default function AuctionEntrance() {
     }
   };
 
+  // ----- HTML Code -----
   return (
     <div className="p-5">
       <div className="py-1 px-4 text-2xl">Auction State: </div>

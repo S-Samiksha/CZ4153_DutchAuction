@@ -1,5 +1,5 @@
 // how to deploy the fund me contract
-
+require("dotenv").config();
 //import
 const {
   networkConfig,
@@ -31,6 +31,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     // we need to wait if on a live network so we can verify properly
     waitConfirmations: network.config.blockConfirmations || 1,
   });
+
   log(`Dutch Auction Contract deployed at ${Dutch_Auction.address}`);
   log("Verifying...");
 
