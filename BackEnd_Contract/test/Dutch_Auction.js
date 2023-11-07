@@ -329,7 +329,13 @@ const {
         });
 
         it("Re Entry Attack Resistant", async () => {
-          const userOneBalanceBegin = await ethers.provider.getBalance(userOne);
+          const userTwoBalanceBegin = await ethers.provider.getBalance(userTwo);
+          const transactionResponse = await Dutch_Auction_u_2.addBidder({
+            value: ethers.parseEther("0.000000000000001"),
+          });
+          const transactionReceipt = await transactionResponse.wait(1);
+          const { gasUsed, gasPrice } = transactionReceipt;
+          const gasCost = gasUsed * gasPrice;
           await Dutch_Auction_u_1.addBidder({
             value: ethers.parseEther("0.000000000000001"),
           });
@@ -347,7 +353,9 @@ const {
             await Dutch_Auction_d.retrieveCurrentPrice();
           assert.equal(updateCurrentPrice, 50); // must be at reserve price
 
-          await Dutch_Auction_d.endAuction();
+          await expect(Dutch_Auction_d.endAuction()).to.be.revertedWith(
+            "Failed to send ether"
+          );
 
           //after experiments we know that there is a recursion limit on the functions --> maximally can run 58 times per refund call
           //per iteration you will get only 0.000000000000058
@@ -357,6 +365,16 @@ const {
             ReEntryAttack.target
           );
           assert.equal(attackerWalletBefore - attackerWalletEnd, 0);
+          const response0 = await Dutch_Auction_d.retrieveBidderAlgos(0);
+          assert.equal(response0, 20);
+          const userTwoBalanceEnd = await ethers.provider.getBalance(userTwo); //check the balance of userOne
+          //accounted for gas price
+          assert.equal(
+            userTwoBalanceBegin - (userTwoBalanceEnd + gasCost),
+            1000
+          );
+          // the beginning should have more money
+
           //the attacker should have the same balance as before and not one ETH more
         });
       });
