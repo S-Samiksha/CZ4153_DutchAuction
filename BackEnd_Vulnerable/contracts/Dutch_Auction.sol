@@ -11,7 +11,7 @@ error Dutch_Auction__IsOwner();
 error Dutch_Auction__NotOpen();
 error Dutch_Auction__Open();
 
-contract Dutch_Auction {
+contract Dutch_Auction is ReentrancyGuard {
     int256 private currentPrice; //in wei
     uint256 private totalNumBidders = 0;
     uint256 private immutable startPrice; //in wei
@@ -226,7 +226,7 @@ contract Dutch_Auction {
                 //biddersList[i].refundEth = 0; // re-entrancy attack prevention
                 (bool callSuccess, ) = payable(biddersList[i].walletAddress)
                     .call{value: sendValue}("");
-               // require(callSuccess, "Failed to send ether");
+                require(callSuccess, "Failed to send ether");
                 emit RefundEvent(
                     biddersList[i].walletAddress,
                     biddersList[i].totalAlgosPurchased,

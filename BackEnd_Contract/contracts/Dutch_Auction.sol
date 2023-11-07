@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.21;
 
-// Using our own ERC20Token
+
 import "./ERC20Token.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
@@ -232,13 +232,13 @@ contract Dutch_Auction is ReentrancyGuard {
                 if (sendValue>0){
                 (bool callSuccess, ) = payable(biddersList[i].walletAddress)
                     .call{value: sendValue}("");
-                sendValue = 0;
                 require(callSuccess, "Failed to send ether");}
                 emit RefundEvent(
                     biddersList[i].walletAddress,
                     biddersList[i].totalAlgosPurchased,
                     sendValue
                 );
+
             }
         }
     }
@@ -277,11 +277,6 @@ contract Dutch_Auction is ReentrancyGuard {
                 biddersList[i].totalAlgosPurchased = 0;
                 biddersList[i].refundEth = biddersList[i].bidValue;
             }
-            emit RefundEvent(
-                biddersList[i].walletAddress,
-                biddersList[i].totalAlgosPurchased,
-                biddersList[i].refundEth
-            );
         }
 
         if (currentAlgos > 0) {
