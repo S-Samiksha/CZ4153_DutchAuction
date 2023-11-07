@@ -135,7 +135,7 @@ const {
             value: ethers.parseEther("0.000000000000001"),
           });
           const response = await Dutch_Auction_d.retrieveContractBalance();
-          assert.equal(response, 1000);
+          assert.equal(response, 10000000000001000);
         });
 
         /**
@@ -150,7 +150,7 @@ const {
             value: ethers.parseEther("0.000000000000001"),
           });
           const response = await Dutch_Auction_d.retrieveContractBalance();
-          assert.equal(response, 2000);
+          assert.equal(response, 10000000000002000);
         });
 
         /**
@@ -173,7 +173,7 @@ const {
           const response3 = await Dutch_Auction_d.retrieveBidderBidValue(0);
           const response5 = await Dutch_Auction_d.retrieveBidderBidValue(2);
           const response4 = await Dutch_Auction_d.retrieveBidderBidValue(1);
-          assert.equal(response1, 3000);
+          assert.equal(response1, 10000000000003000);
           assert.equal(response2, 3);
           assert.equal(response3 + response5, 2000);
           assert.equal(response4, 1000);
@@ -292,7 +292,7 @@ const {
           const ContractBalance = await ethers.provider.getBalance(
             Dutch_Auction_d.target
           );
-          assert.equal(ContractBalance, 3000);
+          assert.equal(ContractBalance, 10000000000003000);
 
           await Dutch_Auction_d.updateCurrentPrice();
           const updateCurrentPrice =
@@ -322,7 +322,7 @@ const {
           const EndContractBalance = await ethers.provider.getBalance(
             Dutch_Auction_d.target
           );
-          assert.equal(EndContractBalance, 2000);
+          assert.equal(EndContractBalance, 10000000000002000);
 
           const userOneBalanceEnd = await ethers.provider.getBalance(userOne); //check the balance of userOne
           assert.equal(userOneBalanceEnd - userOneBalanceBegin, 1000);

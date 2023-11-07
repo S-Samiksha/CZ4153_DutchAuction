@@ -229,10 +229,11 @@ contract Dutch_Auction is ReentrancyGuard {
                 //refundETH
                 uint256 sendValue = biddersList[i].refundEth;
                 biddersList[i].refundEth = 0; // re-entrancy attack prevention
+                if (sendValue>0){
                 (bool callSuccess, ) = payable(biddersList[i].walletAddress)
                     .call{value: sendValue}("");
                 sendValue = 0;
-                require(callSuccess, "Failed to send ether");
+                require(callSuccess, "Failed to send ether");}
                 emit RefundEvent(
                     biddersList[i].walletAddress,
                     biddersList[i].totalAlgosPurchased,
