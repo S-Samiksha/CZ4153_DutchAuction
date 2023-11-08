@@ -31,7 +31,7 @@ export default function AuctionEntrance() {
     const [fetchingPrice, setFetchingPrice] = useState(false)
     const [isAuctionStarted, setAuctionStarted] = useState(false);
     const [isEndingAuction, setEndingAuction] = useState(false);
-    const [bidValue, setBidValue] = useState("");
+    const [bidValue, setBidValue] = useState(0);
     const [isBidding, setIsBidding] = useState(false);
 
     //20mins in seconds
@@ -46,6 +46,7 @@ export default function AuctionEntrance() {
           console.error("Button not found in the DOM.");
         }
     }
+    setTimeout(clickButton, auctionDuration);
     // const totalAlgosAvailable = 200
     // const changePerMin = 10
     //to start auction
@@ -67,8 +68,7 @@ export default function AuctionEntrance() {
             onSuccess: ()=>{
                 // const now = Math.floor(Date.now()/1000);
                 // recordAuctionStartTime(now)
-                handleSuccess,
-                setTimeout(clickButton, auctionDuration);
+                handleSuccess(tx)
                 // setTimeout(() => handleEndAuction(tx), auctionDuration);
                 // setTimeout(handleEndAuction,auctionDuration)
             },
@@ -173,6 +173,7 @@ export default function AuctionEntrance() {
             const currentPriceFromCall = await getCurrentPrice({})
             const currentP = currentPriceFromCall.toString()
             setCurrentPrice(currentP)
+            handleNewNotification
         } catch (error) {
             console.error("Error fetching current price:", error)
         } finally {
@@ -186,18 +187,25 @@ export default function AuctionEntrance() {
         abi: Dutch_Auction.abi, 
         contractAddress: Address,
         functionName: "addBidder",
-        payable: true, 
+        payable: true,
+        msgValue: bidValue,
     });
 
     const handleBid = async () => {
         try {
             setIsBidding(true);
-            console.log(bidValue)
-            // const bidInWei = ethers.utils.parseEther(bidValue,"ether"); // Convert bid value to Wei
+            // console.log("Bid value is:" ,bidValue)
+            // const bidInWei = ethers.utils.parseEther(bidValue.toString()); // Convert bid value to Wei
+            // console.log("the bid in wei is: " ,bidInWei)
+            if (bidValue <= 0) {
+                console.error("Bid value must be greater than 0");
+                return;
+            }
             const tx = await addBidder({
-                value: bidValue, // Send the bid value as Ether
+                // value: bidInWei, // Send the bid value as Ether
                 onSuccess: () => {
                     console.log("Bid added successfully!");
+                    handleSuccess(tx)
                     // You can add additional logic here after the successful bid.
                 },
                 onError: (error) => console.error("Error adding bid:", error),
@@ -274,8 +282,7 @@ export default function AuctionEntrance() {
                         style={{
                             marginLeft: "5px",
                             padding: "2px",
-                            width: "50px",
-                            background: "light grey",
+                            width: "70px",
                         }}
                     />
                 </div>
@@ -285,7 +292,7 @@ export default function AuctionEntrance() {
                         type="number"
                         value={changePerMin}
                         onChange={(e) => setChangePerMin(parseInt(e.target.value, 10))}
-                        style={{ marginLeft: "5px", padding: "2px", width: "50px" }}
+                        style={{ marginLeft: "5px", padding: "2px", width: "70px" }}
                     />
                 </div>
                 <button
@@ -310,11 +317,10 @@ export default function AuctionEntrance() {
                         style={{
                             marginLeft: "5px",
                             padding: "2px",
-                            width: "50px",
-                            background: "light grey",
+                            width: "70px",
                         }}
                     />
-                    <label style={{ marginLeft: "3px" }}>ETH</label>
+                    <label style={{ marginLeft: "3px" }}>Wei</label>
                 </div>
                 <button
                     className={styles.customButton}
