@@ -157,7 +157,9 @@ contract Dutch_Auction is ReentrancyGuard {
     function addBidder() public payable notOwner AuctionOpen {
         //checking all the requirements
         require(msg.value > 0, "bidValue less than 0");
+
         calculate();
+        require(msg.value > currentPrice, "bidValue less than 0");
         require(block.timestamp - startTime < AUCTION_TIME, "time is up");
         require(currentUnsoldAlgos > 0, "There is no more algos left");
 
