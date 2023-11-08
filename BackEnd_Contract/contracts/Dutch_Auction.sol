@@ -159,7 +159,7 @@ contract Dutch_Auction is ReentrancyGuard {
         require(msg.value > 0, "bidValue less than 0");
 
         calculate();
-        require(msg.value > currentPrice, "bidValue less than 0");
+        require(msg.value > uint256(currentPrice), "bidValue less than current price");
         require(block.timestamp - startTime < AUCTION_TIME, "time is up");
         require(currentUnsoldAlgos > 0, "There is no more algos left");
 
@@ -367,3 +367,4 @@ contract Dutch_Auction is ReentrancyGuard {
         return s_auctionState;
     }
 }
+
