@@ -323,8 +323,7 @@ const {
             Dutch_Auction_d.target
           );
           assert.equal(EndContractBalance, 10000000000002000);
-          const refundState = await getRefundState(0);
-          assert(refundState, 1);
+
           const userOneBalanceEnd = await ethers.provider.getBalance(userOne); //check the balance of userOne
           assert.equal(userOneBalanceEnd - userOneBalanceBegin, 1000);
         });

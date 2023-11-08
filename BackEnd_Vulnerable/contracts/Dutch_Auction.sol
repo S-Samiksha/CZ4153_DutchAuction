@@ -35,6 +35,8 @@ contract Dutch_Auction is ReentrancyGuard {
         uint256 totalAlgosPurchased;
         uint256 refundEth;
         bool isExist;
+        bool tokenSent;
+        bool ethRefunded;
     }
 
     // Variable to indicate auction's state --> type declaration
@@ -168,6 +170,8 @@ contract Dutch_Auction is ReentrancyGuard {
         newBidder.isExist = true;
         newBidder.totalAlgosPurchased = 0;
         newBidder.refundEth = 0;
+        newBidder.tokenSent = false;
+        newBidder.ethRefunded = false;
         biddersList[totalNumBidders] = newBidder;
         emit addBidderEvent(
             newBidder.bidderID,
@@ -347,6 +351,10 @@ contract Dutch_Auction is ReentrancyGuard {
 
     function balanceOfBidder(uint256 bidder) public view returns (uint256) {
         return DAToken.balanceOf(biddersList[bidder].walletAddress);
+    }
+    
+    function getRefundState(uint256 bidder) public view returns (bool){
+        return biddersList[bidder].ethRefunded;
     }
 
     fallback() external payable {
