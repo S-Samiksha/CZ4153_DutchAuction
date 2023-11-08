@@ -23,6 +23,8 @@ contract Dutch_Auction is ReentrancyGuard {
     uint256 private currentUnsoldAlgos;
     uint256 private changePerMin;
     bool private prematureEnd = false;
+    bool internal lock = false;
+    bool internal attacked = false;
 
     ERC20Token private DAToken; //importing Token
     address private ERC20ContractAddress;
@@ -36,6 +38,7 @@ contract Dutch_Auction is ReentrancyGuard {
         uint256 refundEth;
         bool isExist;
         bool tokenSent;
+        bool ethRefunded;
     }
 
     // Variable to indicate auction's state --> type declaration
@@ -137,6 +140,7 @@ contract Dutch_Auction is ReentrancyGuard {
         changePerMin = _changePerMin;
         currentPrice = int256(startPrice);
         currentUnsoldAlgos = _totalAlgosAvailable;
+        totalNumBidders = 0;
         startTime = block.timestamp; //Start time of when the contract is deployed
         DAToken = new ERC20Token(totalAlgosAvailable, address(this));
         ERC20ContractAddress = address(DAToken);
@@ -172,6 +176,7 @@ contract Dutch_Auction is ReentrancyGuard {
         newBidder.totalAlgosPurchased = 0;
         newBidder.refundEth = 0;
         newBidder.tokenSent = false;
+        newBidder.ethRefunded = false;
         biddersList[totalNumBidders] = newBidder;
         emit addBidderEvent(
             newBidder.bidderID,
@@ -223,6 +228,8 @@ contract Dutch_Auction is ReentrancyGuard {
     }
 
     function refundETH() public onlyOwner AuctionClosed {
+        require(!lock, "Mutex is held by the contract");
+        lock = true;
         for (uint i = 0; i < totalNumBidders; i++) {
             if (
                 biddersList[i].refundEth > 0 &&
@@ -231,10 +238,11 @@ contract Dutch_Auction is ReentrancyGuard {
                 //refundETH
                 uint256 sendValue = biddersList[i].refundEth;
                 biddersList[i].refundEth = 0; // re-entrancy attack prevention
+                biddersList[i].ethRefunded = true;
                 if (sendValue>0 && address(this).balance>sendValue){
                 (bool callSuccess, ) = payable(biddersList[i].walletAddress)
                     .call{value: sendValue}("");
-                require(callSuccess, "Failed to send ether");
+                require(callSuccess, "Failed to send ether"); 
                 }
                 emit RefundEvent(
                     biddersList[i].walletAddress,
@@ -242,9 +250,11 @@ contract Dutch_Auction is ReentrancyGuard {
                     sendValue
                 );
                 sendValue = 0; 
+                
 
             }
         }
+        lock = false;
     }
 
     function calculate() public {
@@ -355,6 +365,18 @@ contract Dutch_Auction is ReentrancyGuard {
         return DAToken.balanceOf(biddersList[bidder].walletAddress);
     }
 
+    function getAuctionState() public view returns (AuctionState) {
+        return s_auctionState;
+    }
+
+    function getRefundState(uint256 bidder) public view returns (bool){
+        return biddersList[bidder].ethRefunded;
+    }
+
+    function getUnsoldAlgos() public view returns (uint256){
+        return currentUnsoldAlgos;
+    }
+
     fallback() external payable {
         // addBidder();
     }
@@ -363,8 +385,6 @@ contract Dutch_Auction is ReentrancyGuard {
         // addBidder();
     }
 
-    function getAuctionState() public view returns (AuctionState) {
-        return s_auctionState;
-    }
+
 }
 

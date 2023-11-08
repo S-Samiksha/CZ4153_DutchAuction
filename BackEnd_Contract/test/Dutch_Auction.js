@@ -38,7 +38,7 @@ const {
  * */
 
 /**
- * First Decribe function wraps the entire testing
+ * Decribe function wraps the entire testing
  * @notice creates 4 accounts to be used: one deployer, and three users
  * This is to test different users bidding in the system
  * Accounts are provided by hardhat itself and are configured in hardhat.config.js
@@ -357,9 +357,12 @@ const {
             "Failed to send ether"
           );
 
+          // await Dutch_Auction_d.endAuction();
+
           //after experiments we know that there is a recursion limit on the functions --> maximally can run 58 times per refund call
           //per iteration you will get only 0.000000000000058
           //means you need to run at least 172413793103 times
+          //Hence, a larger value is used to show the re entrancy resistance.
 
           const attackerWalletEnd = await ethers.provider.getBalance(
             ReEntryAttack.target
@@ -367,13 +370,60 @@ const {
           assert.equal(attackerWalletBefore - attackerWalletEnd, 0);
           const response0 = await Dutch_Auction_d.retrieveBidderAlgos(0);
           assert.equal(response0, 20);
-          const userTwoBalanceEnd = await ethers.provider.getBalance(userTwo); //check the balance of userOne
+          const userTwoBalanceEnd = await ethers.provider.getBalance(userTwo); //check the balance of userTwo
           //accounted for gas price
           assert.equal(
             userTwoBalanceBegin - (userTwoBalanceEnd + gasCost),
             1000
           );
           // the beginning should have more money
+
+          //the attacker should have the same balance as before and not one ETH more
+        });
+        it("Re Entry Attack Resistant testing user bidding after attacker ", async () => {
+          const userOneBalanceBegin = await ethers.provider.getBalance(userOne);
+          await Dutch_Auction_u_1.addBidder({
+            value: ethers.parseEther("0.000000000000002"),
+          });
+
+          ReEntryAttack = await ethers.getContract("ReEntrancyAttack", userOne);
+
+          const response = await ReEntryAttack.ReentranceAttack2(); //attackers bids here
+
+          await time.increase(120);
+          const userTwoBalanceBegin = await ethers.provider.getBalance(userTwo);
+          const transactionResponse = await Dutch_Auction_u_2.addBidder({
+            value: ethers.parseEther("0.0000000000000005"),
+          });
+
+          const transactionReceipt = await transactionResponse.wait(1);
+          const { gasUsed, gasPrice } = transactionReceipt;
+          const gasCost = gasUsed * gasPrice;
+
+          const attackerWalletBefore = await ethers.provider.getBalance(
+            ReEntryAttack.target
+          ); //this attacker wallet after the bid
+
+          await time.increase(100); //trigger refund
+          await Dutch_Auction_d.updateCurrentPrice();
+          const updateCurrentPrice =
+            await Dutch_Auction_d.retrieveCurrentPrice();
+          assert.equal(updateCurrentPrice, 10); // must be at reserve price
+
+          // await Dutch_Auction_d.endAuction();
+
+          await expect(Dutch_Auction_d.endAuction()).to.be.revertedWith(
+            "Failed to send ether"
+          );
+
+          const attackerWalletEnd = await ethers.provider.getBalance(
+            ReEntryAttack.target
+          );
+          assert.equal(attackerWalletBefore - attackerWalletEnd, 0); //attacker's wallet should not have any eth inside
+          const response2 = await Dutch_Auction_d.balanceOfBidder(2);
+          assert.equal(response2, 0);
+          const userTwoBalanceEnd = await ethers.provider.getBalance(userTwo); //check the balance of userOne
+          assert.equal(userTwoBalanceBegin - userTwoBalanceEnd, gasCost);
 
           //the attacker should have the same balance as before and not one ETH more
         });

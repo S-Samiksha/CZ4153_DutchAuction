@@ -23,6 +23,10 @@ contract ReEntrancyAttack {
         target.addBidder{value: 0.001 ether}();
     }
 
+    function ReentranceAttack2() public{
+        target.addBidder{value: 0.000000000000001 ether}();
+    }
+
 
 
 //deliberatily end auction to test
