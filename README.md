@@ -9,7 +9,7 @@ Blockchain Project to build a DutchAuction
 
 ## PROJECT REQUIREMENTS
 
-**Feature Requirement**
+**Feature Requirement** <br>
 Dutch Auction smart contracts should:
 
 - Firstly, define and implement your new token using the ERC20 standard
@@ -20,7 +20,7 @@ Dutch Auction smart contracts should:
 - What is reentry attack,
 - hands-on practice on reentry.
 
-<br><br>
+<br>
 
 **Tricky Points to Ponder**
 
@@ -79,7 +79,7 @@ const INTERVAL = 30;
 const CHANGEPERMIN = 15;
 ```
 
-### ADDING HARHDAT WALLETS TO METAMASK
+## ADDING HARHDAT WALLETS TO METAMASK
 
 **Finding Private Keys of Hardhat Wallets**
 
@@ -108,9 +108,9 @@ const CHANGEPERMIN = 15;
 
 **Final State**
 
-![Metamask](assets/metamask.png "Metamask")
+![Metamask](assets/Metamask.png "Metamask")
 
-### DEPLOYING THE CONTRACT & FRONTEND
+## DEPLOYING THE CONTRACT & FRONTEND
 
 > If you have BASH: <br>
 1. Open one terminal for backend
@@ -146,7 +146,7 @@ yarn dev
 1. Open a browser withe the metamask that has the hardhat wallet accounts 
 2. Navigate to `http://localhost:3000`
 
-### STARTING THE AUCTION
+## STARTING THE AUCTION
 
 **Parameters**: <br>
 `_totalAlgosAvailable`: Total number of tokens to be mint for this round of auction <br>
@@ -181,7 +181,12 @@ function startAuction(
 ![Start_Button](assets/Start_Button.png "Start Button")
 
 
-## Hardhat test scripts
+## HARDHAT TEST SCRIPTS
+To run the test scripts that is used to test the contract, run the following:
+```
+cd BackEnd_Contract
+yarn hardhat test
+```
 
 
 
