@@ -146,6 +146,9 @@ yarn dev
 1. Open a browser withe the metamask that has the hardhat wallet accounts 
 2. Navigate to `http://localhost:3000`
 
+> To end 
+On all running terminals, press `ctr+c` to end. 
+
 ## STARTING THE AUCTION
 
 **Parameters**: <br>

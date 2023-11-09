@@ -32,7 +32,7 @@ export default function AuctionEntrance() {
   const [isBidding, setIsBidding] = useState(false);
 
   //20mins in seconds
-  const auctionDuration = 3 * 60 * 1000;
+  const auctionDuration = 5 * 60 * 1000;
   const dispatch = useNotification();
 
   function clickButton() {
