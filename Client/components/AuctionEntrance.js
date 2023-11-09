@@ -58,7 +58,7 @@ export default function AuctionEntrance() {
     try {
       setAuctionStarted(true); // Set the flag to true
       setTimeout(() => {
-        clickButton;
+        clickButton();
       }, auctionDuration);
       const tx = await startAuction({
         onSuccess: () => {
