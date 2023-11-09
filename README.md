@@ -2,12 +2,12 @@
 
 Blockchain Project to build a DutchAuction
 
-## Project members
+## PROJECT MEMBERS
 
 - Sankar Samiksha
 - Poon Yan Xin Melise
 
-## Project Requirements
+## PROJECT REQUIREMENTS
 
 **Feature Requirement**
 Dutch Auction smart contracts should:
@@ -26,13 +26,24 @@ Dutch Auction smart contracts should:
 
 - How to enforce auction duration/countdown clock in blockchain?
 - How to link/wrap your token contract with your auction contract?
-- How to “burn” the unsold tokens?
+- How to "burn" the unsold tokens?
 - How to enforce successful bidder to pay Ether for the new token, (I.e., they can’t cancel the bid) and how to
   refund bids that are invalid?
 
-## Functions in Solidity
+## CLONING THE REPOSITORY AND INSTALLING PACKAGES
 
-### Constructor
+```
+git clone https://github.com/S-Samiksha/CZ4153_DutchAuction/tree/main
+cd BackEnd_Contract
+yarn
+cd ..
+cd Client
+yarn
+```
+
+## CONFIGURATIONS 
+
+### CONSTRUCTOR
 
 **Parameters**:
 `_reservePrice`: The minimum price of tokens <br>
@@ -54,7 +65,88 @@ constructor(uint256 _reservePrice, uint256 _startPrice) {
 
 ```
 
-### startAuction
+**Configuration File**
+
+1. Navigate to the `helper-hardhat-config.js`
+2. Change the parameters according to the reserve price, start price you want 
+
+```javascript
+const INITIAL_SUPPLY_INT = 200;
+const INITIAL_SUPPLY = (INITIAL_SUPPLY_INT * 10 ** 18).toString();
+const RESERVE_PRICE = 10;
+const START_PRICE = 50;
+const INTERVAL = 30;
+const CHANGEPERMIN = 15;
+```
+
+### ADDING HARHDAT WALLETS TO METAMASK
+
+**Finding Private Keys of Hardhat Wallets**
+
+1. Run `yarn hardhat node`
+2. Copy one of the private keys. The first account is the owner by default. 
+
+![Private_Keys](assets/Private_Keys_HH.png "HH Private Keys")
+
+**Add Account**
+
+1. Press the button `+ Add account or hardware wallet`
+
+![Step_1](assets/Step_1.png "Step_1")
+
+**Import Account**
+
+1. Press the `Import account` button
+
+![Step_2](assets/step_2.png "Step_2")
+
+**Paste Private Key**
+1. Paste the private key copied earlier
+2. Click `Import`
+
+![Step_3](assets/step_3.png "Step_3")
+
+**Final State**
+
+![Metamask](assets/metamask.png "Metamask")
+
+### DEPLOYING THE CONTRACT & FRONTEND
+
+> If you have BASH: <br>
+1. Open one terminal for backend
+```
+cd BackEnd_Contract
+chmod +x run.sh
+./run.sh
+```
+2. Open second terminal for front-end
+```
+cd Client 
+yarn dev
+```
+
+> If you do not have BASH: <br>
+1. Open the first terminal 
+```
+cd BackEnd_Contract
+yarn hardhat node
+```
+2. Open a second terminal
+```
+cd BackEnd_Contract
+yarn hardhat run scripts/calculate.js --network localhost
+```
+3. Open a third terminal for front end
+```
+cd Client 
+yarn dev
+```
+
+> Finally
+1. Open a browser withe the metamask that has the hardhat wallet accounts 
+2. Navigate to `http://localhost:3000`
+
+### STARTING THE AUCTION
 
 **Parameters**: <br>
 `_totalAlgosAvailable`: Total number of tokens to be mint for this round of auction <br>
@@ -81,23 +173,17 @@ function startAuction(
     }
 ```
 
-## Re Entrancy Attack
+**Interacting with the Start Button in the UI**
 
-### To run project:
+1. Add in the number of Algos/Tokens you want the auction to hold 
+2. Add in the rate of reduction you want
 
-```
-git clone https://github.com/S-Samiksha/CZ4153_DutchAuction
-cd CZ4153_DutchAuction
-```
+![Start_Button](assets/Start_Button.png "Start Button")
 
-### To run the scripts
 
-```
-yarn
-yarn hardhat node # to deploy the contracts in local host
-yarn hardhat run scripts/start.js --network localhost # to interact with the deployed contract on localhost
+## Hardhat test scripts
 
-```
+
 
 ### References:
 
