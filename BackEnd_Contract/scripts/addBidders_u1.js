@@ -6,7 +6,7 @@ async function main() {
   console.log(`Got contract DA at ${Dutch_Auction.target}`);
   console.log("Adding Bidder...");
   const transactionResponse = await Dutch_Auction.addBidder({
-    value: ethers.parseEther("0.000000000000001"),
+    value: ethers.parseEther("0.000000000000002"),
   });
   await transactionResponse.wait();
   console.log("Added User One!");
