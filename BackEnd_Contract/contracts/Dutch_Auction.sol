@@ -134,7 +134,7 @@ contract Dutch_Auction is ReentrancyGuard {
     function startAuction(
         uint256 _totalAlgosAvailable,
         uint256 _changePerMin
-    ) public onlyOwner AuctionClosed returns (address) {
+    ) public onlyOwner AuctionClosed () {
         s_auctionState = AuctionState.OPEN;
         totalAlgosAvailable = _totalAlgosAvailable;
         changePerMin = _changePerMin;
@@ -150,7 +150,6 @@ contract Dutch_Auction is ReentrancyGuard {
             totalAlgosAvailable,
             changePerMin
         );
-        return ERC20ContractAddress;
     }
 
     /**
@@ -377,6 +376,10 @@ contract Dutch_Auction is ReentrancyGuard {
         return currentUnsoldAlgos;
     }
 
+    function retreiveContractER20Tokens() public view returns(uint256){
+        return DAToken.balanceOf(address(this));
+    }
+
     fallback() external payable {
         // addBidder();
     }
@@ -384,6 +387,8 @@ contract Dutch_Auction is ReentrancyGuard {
     receive() external payable {
         // addBidder();
     }
+
+
 
 
 }

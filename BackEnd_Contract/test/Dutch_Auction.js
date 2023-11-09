@@ -201,6 +201,11 @@ const {
           //bid 1: user 2
           //bid 2: user 1 second bid
           //bid 3: user 3
+
+          const remainingTokensBefore =
+            await Dutch_Auction_d.retreiveContractER20Tokens();
+
+          assert.equal(remainingTokensBefore, 200000000000000000000); //before
           const transactionResponse = await Dutch_Auction_d.endAuction();
           await transactionResponse.wait();
 
@@ -218,11 +223,22 @@ const {
           assert.equal(tokensToSendUserTwo, 20);
 
           const tokenBalanceSent = await Dutch_Auction_d.balanceOfBidder(0);
+          const tokenBalanceSent1 = await Dutch_Auction_d.balanceOfBidder(1);
+          const tokenBalanceSent3 = await Dutch_Auction_d.balanceOfBidder(3);
 
           assert.equal(
             tokenBalanceSent,
             ethers.parseEther(tokensToSendUserOne.toString())
           );
+          assert.equal(
+            80000000000000000000,
+            tokenBalanceSent + tokenBalanceSent1 + tokenBalanceSent3
+          );
+
+          const remainingTokens =
+            await Dutch_Auction_d.retreiveContractER20Tokens();
+
+          assert.equal(remainingTokens, 0); //because they are burnt
         });
 
         it("Checking if the ERC20 Tokens are sent properly (increment in time testing, reservation price is not hit, but all tokens sold out)", async () => {
@@ -282,6 +298,8 @@ const {
 
           const userOneBalanceBegin = await ethers.provider.getBalance(userOne);
           await time.increase(180);
+          //50-3*15 = 50-45
+          // since 5 is lower than the reserve price of 10 --> set price to 10
 
           await expect(
             Dutch_Auction_u_3.addBidder({
