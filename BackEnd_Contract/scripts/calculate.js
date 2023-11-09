@@ -22,7 +22,7 @@ async function myFunction(currentTime) {
   );
   for (i = 0; i < totalBidders; i++) {
     bids = await Dutch_Auction.retrieveBidderAlgos(i);
-    console.log(`Bidder: ${i} -> Total Aglos Bidded: ${bids}`);
+    console.log(`Bidder: ${i} -> Total Algos/ERC20 Bidded: ${bids}`);
   }
   if (auctionState == 1) {
     console.log(`Auction is closed`);
