@@ -26,8 +26,9 @@ async function endFunction() {
 
 setTimeout(() => {
   endFunction();
-}, 1200000);
+}, 3 * 60 * 1000);
 
 //test:10 seconds -> 10000
 //test: 2 minutes -> 120000
+//test: 3 minutes -> 180000 (3*60*1000)
 //1200000
