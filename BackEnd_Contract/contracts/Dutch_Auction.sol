@@ -228,7 +228,7 @@ contract Dutch_Auction is ReentrancyGuard {
     }
 
     function refundETH() public onlyOwner AuctionClosed {
-        require(!lock, "Mutex is held by the contract");
+        require(!lock, "Lock is held by the contract");
         lock = true;
         for (uint i = 0; i < totalNumBidders; i++) {
             if (
