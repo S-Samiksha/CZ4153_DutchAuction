@@ -7,7 +7,7 @@ Blockchain Project to build a DutchAuction
 - Sankar Samiksha
 - Poon Yan Xin Melise
 
-## A Project Submission video of higher quality can be found below:
+## The project video submission of higher quality can be found below:
 https://youtu.be/X0FkcZmnmsc
 
 ## PROJECT REQUIREMENTS
