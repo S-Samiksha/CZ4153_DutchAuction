@@ -115,7 +115,7 @@ const CHANGEPERMIN = 15;
 
 ## DEPLOYING THE CONTRACT & FRONTEND
 
-> If you have BASH: <br>
+**If you have BASH:** <br>
 1. Open one terminal for backend
 ```
 cd BackEnd_Contract
@@ -128,7 +128,7 @@ cd Client
 yarn dev
 ```
 
-> If you do not have BASH: <br>
+**If you do not have BASH:** <br>
 1. Open the first terminal 
 ```
 cd BackEnd_Contract
@@ -145,11 +145,11 @@ cd Client
 yarn dev
 ```
 
-> Finally
+**Finally**
 1. Open a browser withe the metamask that has the hardhat wallet accounts 
 2. Navigate to `http://localhost:3000`
 
-> To end 
+**To End**
 On all running terminals, press `ctr+c` to end. 
 
 ## STARTING THE AUCTION
