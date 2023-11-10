@@ -59,7 +59,7 @@ contract Dutch_Auction is ReentrancyGuard {
         reservePrice = _reservePrice;
         currentPrice = int256(_startPrice);
         startPrice = _startPrice;
-
+        startTime = 0;
         s_auctionState = AuctionState.CLOSING;
     }
 
@@ -378,6 +378,15 @@ contract Dutch_Auction is ReentrancyGuard {
 
     function retreiveContractER20Tokens() public view returns(uint256){
         return DAToken.balanceOf(address(this));
+    }
+
+    function retrieveTimeElapsed() public view returns(uint256){
+        if (startTime>0){
+        return (block.timestamp - startTime) / 60;}
+        else{
+            return 0;
+        }
+
     }
 
     fallback() external payable {

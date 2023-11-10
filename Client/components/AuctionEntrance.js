@@ -25,17 +25,21 @@ export default function AuctionEntrance() {
   const [totalAlgosAvailable, setTotalAlgosAvailable] = useState(0);
   const [changePerMin, setChangePerMin] = useState(0);
   const [currentPrice, setCurrentPrice] = useState(0);
+  const [currentTokenLeft, setUnsoldTokens] = useState(0);
   const [fetchingPrice, setFetchingPrice] = useState(false);
+  const [fetchingToken, setFetchingToken] = useState(false);
+  const [fetchingState, setFetchingState] = useState(false);
   const [isAuctionStarted, setAuctionStarted] = useState(false);
   const [isEndingAuction, setEndingAuction] = useState(false);
+
   const [bidValue, setBidValue] = useState(0);
   const [isBidding, setIsBidding] = useState(false);
 
   //20mins in seconds
-  const auctionDuration = 5 * 60 * 1000;
+  const auctionDuration = 20 * 60 * 1000;
   const dispatch = useNotification();
 
-  function clickButton() {
+  async function clickButton() {
     const button = document.getElementById("endButton");
     if (button) {
       button.click();
@@ -54,6 +58,7 @@ export default function AuctionEntrance() {
       _changePerMin: changePerMin,
     },
   });
+
   const handleStartAuction = async () => {
     try {
       setAuctionStarted(true); // Set the flag to true
@@ -91,6 +96,20 @@ export default function AuctionEntrance() {
     params: {},
   });
 
+  const handleFetchState = async () => {
+    try {
+      setFetchingState(true);
+      const currentState = await getAuctionState({});
+      const mappedAuctionState = currentState === 0 ? "OPEN" : "CLOSED";
+      setAuctionState(mappedAuctionState);
+      handleNewNotification;
+    } catch (error) {
+      console.error("Error fetching current price:", error);
+    } finally {
+      setFetchingState(false);
+    }
+  };
+
   const { runContractFunction: getAuctionOwner } = useWeb3Contract({
     abi: Dutch_Auction.abi,
     contractAddress: Address,
@@ -115,6 +134,26 @@ export default function AuctionEntrance() {
       console.error("Error fetching current price:", error);
     } finally {
       setFetchingPrice(false);
+    }
+  };
+
+  const { runContractFunction: getUnsoldAlgos } = useWeb3Contract({
+    abi: Dutch_Auction.abi,
+    contractAddress: Address, // Specify the networkId
+    functionName: "getUnsoldAlgos",
+  });
+
+  const handleFetchToken = async () => {
+    try {
+      setFetchingToken(true);
+      const TokensFromCall = await getUnsoldAlgos({});
+      const currentT = TokensFromCall.toString();
+      setUnsoldTokens(currentT);
+      handleNewNotification;
+    } catch (error) {
+      console.error("Error fetching unsold Tokens:", error);
+    } finally {
+      setFetchingToken(false);
     }
   };
 
@@ -188,7 +227,6 @@ export default function AuctionEntrance() {
 
   return (
     <div className="p-5">
-      <div className="py-1 px-4 text-2xl">Auction State: {auctionState} </div>
       <div className="py-2 px-4 text-2xl">Auction Owner: {auctionOwner}</div>
       <div className={styles.container1}>
         <div style={{ marginBottom: "10px", marginTop: "10px" }}>
@@ -256,6 +294,22 @@ export default function AuctionEntrance() {
       </div>
       <div className={styles.container1}>
         <div style={{ marginBottom: "10px", marginTop: "10px" }}>
+          <label>Current State: {auctionState} </label>
+        </div>
+        <button
+          className={styles.customButton}
+          onClick={handleFetchState}
+          disabled={fetchingState}
+        >
+          {fetchingState ? (
+            <div className="animate-spin spinner-border h-8 w-8 border-b-2 rounded-full"></div>
+          ) : (
+            "Update Current State"
+          )}
+        </button>
+      </div>
+      <div className={styles.container1}>
+        <div style={{ marginBottom: "10px", marginTop: "10px" }}>
           <label>Current Price: {currentPrice} </label>
           <label style={{ marginLeft: "3px" }}>ETH</label>
         </div>
@@ -271,18 +325,37 @@ export default function AuctionEntrance() {
           )}
         </button>
       </div>
-      <button
-        id="endButton"
-        className={styles.customButton}
-        onClick={endAuction}
-        disabled={isEndingAuction}
-      >
-        {isEndingAuction ? (
-          <div className="animate-spin spinner-border h-8 w-8 border-b-2 rounded-full"></div>
-        ) : (
-          "End Auction"
-        )}
-      </button>
+      <div className={styles.container1}>
+        <div style={{ marginBottom: "10px", marginTop: "10px" }}>
+          <label>ERC20 Tokens Left: {currentTokenLeft} </label>
+          {/* <label style={{ marginLeft: "3px" }}></label> */}
+        </div>
+        <button
+          className={styles.customButton}
+          onClick={handleFetchToken}
+          disabled={fetchingToken}
+        >
+          {fetchingToken ? (
+            <div className="animate-spin spinner-border h-8 w-8 border-b-2 rounded-full"></div>
+          ) : (
+            "Update Unsold Tokens"
+          )}
+        </button>
+      </div>
+      <div>
+        <button
+          id="endButton"
+          className={styles.customButton}
+          onClick={endAuction}
+          disabled={isEndingAuction}
+        >
+          {isEndingAuction ? (
+            <div className="animate-spin spinner-border h-8 w-8 border-b-2 rounded-full"></div>
+          ) : (
+            "End Auction"
+          )}
+        </button>
+      </div>
     </div>
   );
 }
