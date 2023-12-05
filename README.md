@@ -1,4 +1,4 @@
-# CZ4153_DutchAuction
+# CZ4153_DutchAuction: ChainBid
 
 Blockchain Project to build a DutchAuction
 
